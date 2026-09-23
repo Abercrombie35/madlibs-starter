@@ -1,81 +1,175 @@
-# Madlibs Activity
-For this activity, you will use what you've learned about git to work collaboratively.
-We're going to write some funny [Madlibs](https://en.wikipedia.org/wiki/Mad_Libs)-style stories.
+# Mad Libs activity
 
-## How To Setup This Activity
+You'll use Git and GitHub to add words or a story to a shared Mad Libs app. The
+goal is to practice the full collaboration loop: fork, branch, edit, test,
+commit, push, open a pull request, review, and merge.
 
-1) Form a group with your neighbors. You should choose one person whose computer you will use. Only
-one person needs to follow these instructions (but all should read them 🤣)
+## 1. Form a group
 
-2) Fork this starter repository on GitHub. Forking means to make a copy of the code but attach it to your own GitHub repository so that you can make changes.
-Technically you are "cloning" the starter repo. GitHub calls this "forking" because they add some other
-bells and whistles on top. You should see a grey button at the top that says "fork"---that is what you want. If you need more information, look at [https://help.github.com/articles/fork-a-repo/](https://help.github.com/articles/fork-a-repo/)
+Work with the people near you and choose one computer. Everyone should follow
+the steps and be able to explain what each Git or GitHub action does.
 
-3) Open a new "CodeSpace" on GitHub. This will start an in-browser
-instance of the popular Visual Studio Code editor. (If you're a ninja,
-clearly do whatever you want instead.)
+Your instructor will assign your group one of these contributions:
 
-4) Right-click on the `index.html` file and then click "Show Preview". You can either make it public or preview in browser. It doesn't matter.
+- nouns
+- verbs
+- adjectives
+- adverbs
+- a new story
 
-6) Take a look around at the files. Familiarize yourself where everything lives. 
+## 2. Open an issue
 
-5) Create new stories, verbs, nouns, adjectives, and adverbs! The instructor will likely
-assign you to one of these. Checkout a new branch with a good name before you do your work. This will be a command like
+In the original repository, [open an issue](https://github.com/yale-mgt-656-fall-2026/madlibs-starter/issues/new)
+describing what your group plans to add. Give it a short title and list your
+group members in the description. Note the issue number; you'll connect your
+pull request to it later.
 
+Your instructor will use the class issues to demonstrate labels, a milestone,
+and a project board. These tools make the type, deadline, owner, and status of
+work visible without a separate status report.
+
+## 3. Fork the repository
+
+Click **Fork** near the upper-right corner of this GitHub page, keep the default
+settings, and click **Create fork**.
+
+A **fork** is your group's copy of this repository on GitHub. It is connected to
+the original repository so that you can propose sending your changes back.
+
+Make sure the repository owner shown at the top of the resulting page is you,
+not `yale-mgt-656-fall-2026`.
+
+## 4. Open a Codespace
+
+From your fork, click **Code**, select **Codespaces**, and click **Create
+codespace on main**. GitHub will open a browser-based version of Visual Studio
+Code. Setup may take a minute; wait for the terminal to finish running
+`npm ci`.
+
+## 5. Preview the app
+
+In the file explorer, right-click `index.html` and select **Show Preview**. You
+can open the preview in the editor or in a browser tab.
+
+Click **New story** a few times to see how the existing words and story
+templates are combined.
+
+## 6. Create a branch
+
+Open the terminal in your Codespace and create a branch for your contribution:
+
+```sh
+git switch -c bald-chicken-new-verbs
 ```
-git checkout -b bald-chicken-new-verbs
+
+Use a different short, descriptive branch name with no spaces, such as
+`fire-lion-new-stories` or `sleek-deer-new-adverbs`.
+
+A branch keeps your proposed change separate from the repository's `main`
+branch until it has been reviewed and merged.
+
+## 7. Make your contribution
+
+### Adding words
+
+Create a new file in the directory for your assigned kind of word. For example,
+a group adding verbs might create `js/verbs/bald-chicken.js` with this content:
+
+```js
+verbs = verbs.concat([
+    'dance',
+    'juggle',
+    'sprint'
+]);
 ```
 
-Here, I named my branch "bald-chicken-new-verbs". You should name yours something *different*, no spaces. E.g.
-your branch name might be "fire-lion-new-stories" or "rad-verbs-for-class-by-sleek-deer".
+Use a unique filename and your own words. Then add a matching `<script>` tag in
+the `<head>` of `index.html`, next to the existing file for that category:
 
+```html
+<script src="js/verbs/bald-chicken.js"></script>
+```
 
-7) Create a new file. You can also edit existing files, but that will make our merging harder! If you want to make a new file of verbs, you might make a file at
-`/js/verbs/bald-chicken.js` and in that file, add new verbs.
+### Adding a story
 
-You should choose a name other than "bald-chicken.js". 
+Add another story block near the existing stories in `index.html`:
 
-8) If you added a new file, make sure you include it from `index.html`.
+```html
+<div class="story">
+    The ADJECTIVE NOUN decided to VERB ADVERB.
+</div>
+```
 
-8) Check your code works. Did you break the app? No? Great! (You can check the preview to see if it works as expected. Do you see your new content? Also you can run `npm test` from the terminal to run some automated sanity tests.)
+Use the placeholders `NOUN`, `VERB`, `ADJECTIVE`, and `ADVERB` exactly as
+written so the app can replace them.
 
-9) Commit your changes and share them
+## 8. Preview and test
 
-    First, take a look at the status of your work
+Refresh the preview and confirm that your contribution appears. Then run the
+automated tests:
 
-    ```
-    git status
-    ```
+```sh
+npm test
+```
 
-    It should show what files are new and what files are changed. Now, you want
-    to add the new files, try the `git add` command. You'll need to supply a file name.
+Fix any reported errors before continuing. The same tests will run on GitHub
+when you open your pull request.
 
-    Once you've added your changes to the "staging area", you want to make a commit. This
-    is a command like
+## 9. Commit and push
 
-    ```
-    git commit -m "Added some verbs for class"
-    ```
+First inspect your work:
 
-    Now, push your changes up to GitHub.
+```sh
+git status
+git diff
+```
 
-    ```
-    git push origin BRANCHNAME
-    ```
+Stage the files you changed, replacing the example paths with yours:
 
-    where `BRANCHNAME` is the name of your branch.
+```sh
+git add index.html js/verbs/bald-chicken.js
+```
 
-10) Go to GitHub, find your fork and the new branch, then make a pull request
+Commit the staged change:
 
-    Pull requests let you tell others about changes you've pushed to a repository on GitHub. Once a pull request is sent, interested parties can review the set of changes, discuss potential modifications, and even push follow-up commits if necessary.
+```sh
+git commit -m "Add verbs for class"
+```
 
-    Click on the logo at right to get started.
-    ![Starting the pull request](https://github.com/yale-cpsc-113/CPSC113-madlibs/blob/main/images/pull.png).
-    Then, once you get to another page, click the blue link.
-    ![Continuing the pull request](https://github.com/yale-cpsc-113/CPSC113-madlibs/blob/main/images/pull2.png)
+Push your branch to your fork:
 
-    Finally, click the create button to checkout the commit.
-    ![Finishing the pull request](https://github.com/yale-cpsc-113/CPSC113-madlibs/blob/main/images/pull3.png)
-    If you need extra help, check this out [https://help.github.com/articles/using-pull-requests/](https://help.github.com/articles/using-pull-requests/) or just come see a TA.
+```sh
+git push -u origin bald-chicken-new-verbs
+```
 
-11) The instructor will merge in everybody's work. 
+Use your actual branch name in the final command.
+
+## 10. Open a pull request
+
+Return to your fork on GitHub. GitHub should display a **Compare & pull
+request** button for the branch you just pushed; click it.
+
+On the pull-request page, verify these settings:
+
+- **base repository:** `yale-mgt-656-fall-2026/madlibs-starter`
+- **base:** `main`
+- **head repository:** your fork
+- **compare:** your new branch
+
+Give the pull request a clear title and briefly describe what your group added.
+Add `Closes #NN` to the description, replacing `NN` with the issue number you
+noted earlier. GitHub will link the issue and pull request, then close the issue
+automatically when the pull request is merged. Click **Create pull request**.
+
+If GitHub does not show the button, follow GitHub's
+[instructions for creating a pull request from a fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+
+## 11. Review and merge
+
+Watch the automated test shown on the pull request. A green check means the
+configured test completed successfully; a red X means the test failed and the
+pull request needs another change.
+
+Review another group's pull request and leave a useful comment or approval.
+Your instructor will merge the finished pull requests into the original
+repository.

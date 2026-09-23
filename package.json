@@ -9,6 +9,6 @@
   "author": "",
   "license": "Unlicense",
   "dependencies": {
-    "jsdom": "^25.0.0"
+    "jsdom": "^29.1.1"
   }
 }

@@ -1,9 +1,15 @@
 {
     "name": "MGT656 Madlibs Codespace",
-    "extensions": [
-        "ms-vscode.live-server"
-    ],
-    "settings": {
-        "terminal.integrated.shell.linux": "/bin/bash"
+    "image": "mcr.microsoft.com/devcontainers/javascript-node:1-22-bookworm",
+    "postCreateCommand": "npm ci",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-vscode.live-server"
+            ],
+            "settings": {
+                "terminal.integrated.defaultProfile.linux": "bash"
+            }
+        }
     }
 }

@@ -96,6 +96,7 @@ function testRenderStory() {
     const renderStory = dom.window.renderStory;
     if (typeof renderStory !== 'function') {
         console.error('❌ renderStory is not a function');
+        hadError = true;
         return;
     }
 
@@ -107,6 +108,7 @@ function testRenderStory() {
         renderedStory.includes('ADJECTIVE') ||
         renderedStory.includes('ADVERB')) {
         console.error('❌ renderStory did not replace all placeholders');
+        hadError = true;
     } else {
         console.log('✅ renderStory replaced all placeholders');
     }
