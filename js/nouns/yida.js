@@ -1,8 +1,8 @@
 nouns = nouns.concat([
-    'emotional support llama',
+    'llama',
     'merge conflict',
-    'sad desk salad',
+    'desk salad',
     'rubber duck',
-    'overdue case study',
-    'suspiciously confident spreadsheet'
+    'case study',
+    'spreadsheet'
 ]);
