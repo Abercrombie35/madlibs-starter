@@ -111,7 +111,7 @@
         const palette = document.querySelector('#palette');
         const paletteNote = document.querySelector('#palette-note');
         const generatedWords = adjectives.concat(['luminous', 'restless', 'velvet', 'brave', 'playful', 'wild', 'tender', 'magnetic', 'strange', 'golden', 'clever', 'electric', 'quiet', 'glossy', 'hopeful']);
-        let userWords = [];
+        let userWords = adjectives.slice();
 
         function addWords() {
             const newWords = input.value.split(',').map(word => word.trim().toLowerCase().replace(/[^a-z -]/g, '').replace(/\s+/g, ' ')).filter(word => word && !userWords.includes(word));
