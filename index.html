@@ -5,9 +5,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>Madlibs in MGT656</title>
+    <title>Adjective Atelier</title>
 
-    <link href="https://fonts.googleapis.com/css?family=Indie+Flower&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
     <script>
         let nouns = [];
@@ -51,12 +51,48 @@
 </head>
 
 <body>
+    <main class="app-shell">
+        <header class="topbar">
+            <a class="wordmark" href="./">ADJ<span>/</span>ATELIER</a>
+            <p class="status"><span class="status-dot"></span> WORD LAB / 01</p>
+        </header>
 
+        <section class="intro">
+            <p class="eyebrow">A tiny vocabulary machine</p>
+            <h1>Start with a few.<br><em>We’ll find the rest.</em></h1>
+            <p class="intro-copy">Drop in adjectives that match your mood. We’ll build a curious little palette around them, then put the words to work.</p>
+        </section>
 
-    <div>
-        <button>New story</button>
-    </div>
-    <div id="rendered-story"></div>
+        <section class="workspace" aria-label="Adjective generator">
+            <div class="input-panel">
+                <div class="section-label"><span>01</span> Your starting words</div>
+                <label for="adjective-input">Add one or more adjectives</label>
+                <div class="input-row">
+                    <input id="adjective-input" type="text" placeholder="e.g. electric, tender" autocomplete="off">
+                    <button id="add-button" class="icon-button" type="button" aria-label="Add adjectives" title="Add adjectives">+</button>
+                </div>
+                <p class="hint">Separate words with commas, then generate a set.</p>
+                <div id="seed-words" class="chip-list" aria-live="polite"></div>
+                <button id="generate-button" class="primary-button" type="button"><span>Generate the rest</span><span aria-hidden="true">↗</span></button>
+            </div>
+
+            <div class="result-panel">
+                <div class="section-label"><span>02</span> Your adjective palette</div>
+                <div id="palette" class="palette" aria-live="polite"></div>
+                <p id="palette-note" class="palette-note">Your palette is waiting for a point of view.</p>
+            </div>
+        </section>
+
+        <section class="story-section">
+            <div class="story-heading">
+                <div>
+                    <div class="section-label"><span>03</span> Put them in motion</div>
+                    <h2>A sentence with some <span>character.</span></h2>
+                </div>
+                <button id="story-button" class="outline-button" type="button">New sentence <span aria-hidden="true">↗</span></button>
+            </div>
+            <div id="rendered-story" aria-live="polite"></div>
+        </section>
 
     <!-- Feel free to add your own stories! -->
     <div class="story">
@@ -67,12 +103,44 @@
     </div>
 
     <script>
-        // When the button is clicked, run the `renderStory` function
-        const button = document.querySelector('button');
-        button.addEventListener('click', renderStory);
+        const input = document.querySelector('#adjective-input');
+        const addButton = document.querySelector('#add-button');
+        const generateButton = document.querySelector('#generate-button');
+        const storyButton = document.querySelector('#story-button');
+        const seedWords = document.querySelector('#seed-words');
+        const palette = document.querySelector('#palette');
+        const paletteNote = document.querySelector('#palette-note');
+        const generatedWords = adjectives.concat(['luminous', 'restless', 'velvet', 'brave', 'playful', 'wild', 'tender', 'magnetic', 'strange', 'golden', 'clever', 'electric', 'quiet', 'glossy', 'hopeful']);
+        let userWords = [];
 
-        // Run it once when the page is loaded.
-        renderStory();
+        function addWords() {
+            const newWords = input.value.split(',').map(word => word.trim().toLowerCase().replace(/[^a-z -]/g, '').replace(/\s+/g, ' ')).filter(word => word && !userWords.includes(word));
+            userWords = userWords.concat(newWords);
+            input.value = '';
+            renderSeeds();
+            input.focus();
+        }
+
+        function renderSeeds() {
+            seedWords.innerHTML = userWords.map(word => `<span class="chip">${word}</span>`).join('');
+        }
+
+        function generatePalette() {
+            const available = generatedWords.filter(word => !userWords.includes(word));
+            const shuffled = available.sort(() => Math.random() - 0.5).slice(0, 6);
+            const words = userWords.concat(shuffled);
+            adjectives = words.length ? words : generatedWords.slice(0, 6);
+            palette.innerHTML = adjectives.map((word, index) => `<span class="palette-word ${index < userWords.length ? 'is-seed' : ''}">${word}</span>`).join('');
+            paletteNote.textContent = `${adjectives.length} words ready to make something memorable.`;
+            renderStory();
+        }
+
+        addButton.addEventListener('click', addWords);
+        generateButton.addEventListener('click', generatePalette);
+        storyButton.addEventListener('click', renderStory);
+        input.addEventListener('keydown', event => { if (event.key === 'Enter') addWords(); });
+        renderSeeds();
+        generatePalette();
     </script>
 </body>
 
