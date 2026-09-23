@@ -72,6 +72,7 @@
                     <button id="add-button" class="icon-button" type="button" aria-label="Add adjectives" title="Add adjectives">+</button>
                 </div>
                 <p class="hint">Separate words with commas, then generate a set.</p>
+                <div class="word-list-heading"><span id="seed-count">0 words</span><span>all saved here</span></div>
                 <div id="seed-words" class="chip-list" aria-live="polite"></div>
                 <button id="generate-button" class="primary-button" type="button"><span>Generate the rest</span><span aria-hidden="true">↗</span></button>
             </div>
@@ -108,6 +109,7 @@
         const generateButton = document.querySelector('#generate-button');
         const storyButton = document.querySelector('#story-button');
         const seedWords = document.querySelector('#seed-words');
+        const seedCount = document.querySelector('#seed-count');
         const palette = document.querySelector('#palette');
         const paletteNote = document.querySelector('#palette-note');
         const generatedWords = adjectives.concat(['luminous', 'restless', 'velvet', 'brave', 'playful', 'wild', 'tender', 'magnetic', 'strange', 'golden', 'clever', 'electric', 'quiet', 'glossy', 'hopeful']);
@@ -123,6 +125,7 @@
 
         function renderSeeds() {
             seedWords.innerHTML = userWords.map(word => `<span class="chip">${word}</span>`).join('');
+            seedCount.textContent = `${userWords.length} ${userWords.length === 1 ? 'word' : 'words'}`;
         }
 
         function generatePalette() {

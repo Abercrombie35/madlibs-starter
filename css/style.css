@@ -47,6 +47,8 @@ input::placeholder { color: #aaa8a1; }
 .hint, .palette-note { color: var(--muted); font-size: 0.67rem; line-height: 1.5; }
 .hint { margin: 14px 0 22px; text-transform: none; letter-spacing: 0; font-family: inherit; }
 .chip-list { min-height: 27px; display: flex; flex-wrap: wrap; gap: 8px; }
+.word-list-heading { color: var(--muted); display: flex; font-family: 'DM Mono', monospace; font-size: 0.62rem; justify-content: space-between; margin: 20px 0 10px; text-transform: uppercase; }
+.word-list-heading span:first-child { color: var(--coral); }
 .chip { background: var(--ink); color: white; font-size: 0.76rem; padding: 6px 10px; }
 .primary-button, .outline-button { align-items: center; display: flex; justify-content: space-between; letter-spacing: 0.04em; font-size: 0.78rem; font-weight: 600; padding: 13px 16px; width: 100%; }
 .primary-button { background: var(--coral); border: 1px solid var(--coral); color: white; margin-top: 28px; }
