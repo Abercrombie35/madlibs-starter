@@ -15,6 +15,8 @@
         let adverbs = [];
         let verbs = [];
         let smileys = [];
+        let places = [];
+        let people = [];
 
         function chooseRandom(anArray) {
             return anArray[Math.floor(Math.random() * anArray.length)];
@@ -31,6 +33,12 @@
             // a randomly selected noun from our list of nouns. This
             // funny format "/NOUN/g" is called a "regular expression"
             // and it is a way of specifying a pattern of letters.
+            // PLACE and PERSON are our own additions. Their names don't
+            // contain NOUN, VERB, ADJECTIVE, or ADVERB, so the other
+            // replacements can't clobber them.
+            storyContent = storyContent.replace(/PLACE/g, () => chooseRandom(places));
+            storyContent = storyContent.replace(/PERSON/g, () => chooseRandom(people));
+
             storyContent = storyContent.replace(/NOUN/g, () => chooseRandom(nouns));
 
             // Do a similar replacement for verbs, adjectives, and adverbs
@@ -48,6 +56,8 @@
     <script src="js/adverbs/kyle.js"></script>
     <script src="js/nouns/kyle.js"></script>
     <script src="js/adjectives/kyle.js"></script>
+    <script src="js/places/mldt.js"></script>
+    <script src="js/people/mldt.js"></script>
 </head>
 
 <body>
@@ -63,7 +73,14 @@
         The ADJECTIVE NOUN VERBs over the ADJECTIVE NOUN.
     </div>
     <div class="story">
-        NOUN and NOUN VERB togther ADVERB and in peace, for such is their nature.
+        NOUN and NOUN VERB together ADVERB and in peace, for such is their nature.
+    </div>
+    <div class="story">
+        It was a ADJECTIVE morning when PERSON arrived at PLACE carrying nothing but a
+        ADJECTIVE NOUN. "I have come to VERB," they announced ADVERB, to no one in
+        particular. Nobody answered, except a NOUN, which began to VERB ADVERB.
+        Hours later, PERSON left PLACE for PLACE, promising never to VERB again,
+        a promise that lasted until lunch.
     </div>
 
     <script>
