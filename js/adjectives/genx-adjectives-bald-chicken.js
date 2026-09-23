@@ -1,0 +1,16 @@
+adjectives = adjectives.concat([
+    'mewing',
+    'GOATed',
+    'mid',
+  'clocked',
+  'GOATed',
+  'mewing',
+  'chopped',
+  'highkey',
+  'drip',
+  'aura points',
+  'rizz',
+  'collab',
+  'creative baddies',
+  'alpha',
+]);
