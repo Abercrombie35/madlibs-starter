@@ -1,0 +1,978 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#8f1d2c">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Mazda3 Check">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<title>2012 Mazda3 Used-Car Inspection Checklist</title>
+<style>
+  :root {
+    --bg: #f4f4f6; --card: #fff; --text: #1c1c1e; --muted: #6b6b73; --line: #e2e2e7;
+    --brand: #8f1d2c; --pass: #1a7f37; --pass-bg: #e6f4ea; --issue: #c62828; --issue-bg: #fdecec;
+    --unsure: #9a6700; --unsure-bg: #fff4d6; --na: #57606a; --na-bg: #eef0f2; --info: #0b5cad; --info-bg: #e7f0fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #000; --card: #1c1c1e; --text: #f2f2f7; --muted: #a1a1aa; --line: #2c2c30;
+      --brand: #e0566b; --pass: #4cc26a; --pass-bg: #12301b; --issue: #ff6b6b; --issue-bg: #3a1414;
+      --unsure: #f2c14e; --unsure-bg: #3a2e0c; --na: #a1a1aa; --na-bg: #2a2a2e; --info: #6aa9ff; --info-bg: #10243d;
+    }
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.45 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; padding-bottom: calc(88px + env(safe-area-inset-bottom)); }
+  a { color: var(--info); }
+  button { font: inherit; color: inherit; }
+  .top { position: sticky; top: 0; z-index: 20; background: var(--card); border-bottom: 1px solid var(--line); padding: calc(10px + env(safe-area-inset-top)) 16px 10px; }
+  .top-row { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+  h1 { font-size: 18px; margin: 0; }
+  .vin { background: none; border: 0; padding: 2px 0; color: var(--muted); font-size: 13px; font-family: ui-monospace, Menlo, monospace; cursor: pointer; }
+  .saved { font-size: 12px; color: var(--pass); min-height: 16px; white-space: nowrap; }
+  .progress { height: 8px; background: var(--line); border-radius: 99px; margin: 8px 0 6px; overflow: hidden; }
+  .bar { height: 100%; width: 0; background: var(--brand); transition: width .25s; }
+  .counts { display: flex; flex-wrap: wrap; gap: 6px 12px; font-size: 13px; color: var(--muted); }
+  .counts b { color: var(--text); }
+  main { max-width: 720px; margin: 0 auto; padding: 12px; }
+  .card { background: var(--card); border-radius: 14px; padding: 14px; margin-bottom: 12px; border: 1px solid var(--line); }
+  .intro summary { font-weight: 600; cursor: pointer; }
+  .intro p, .intro ul { margin: 8px 0 0; color: var(--muted); font-size: 15px; }
+  .intro ul { padding-left: 20px; }
+  .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .info-grid label { font-size: 13px; color: var(--muted); display: block; }
+  .info-grid input { width: 100%; margin-top: 4px; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font-size: 16px; }
+  .filters { display: flex; gap: 8px; overflow-x: auto; padding: 2px 0 10px; -webkit-overflow-scrolling: touch; }
+  .chip { flex: none; border: 1px solid var(--line); background: var(--card); border-radius: 99px; padding: 7px 14px; font-size: 14px; cursor: pointer; }
+  .chip[aria-pressed="true"] { background: var(--text); color: var(--card); border-color: var(--text); }
+  details.section { background: var(--card); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 12px; overflow: hidden; }
+  details.section > summary { list-style: none; cursor: pointer; padding: 14px; display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+  details.section > summary::-webkit-details-marker { display: none; }
+  .sec-title { font-weight: 700; font-size: 17px; }
+  .sec-sub { font-size: 13px; color: var(--muted); }
+  .sec-count { font-size: 13px; color: var(--muted); white-space: nowrap; }
+  .sec-count.done { color: var(--pass); font-weight: 600; }
+  .item { border-top: 1px solid var(--line); padding: 14px; scroll-margin-top: 120px; transition: background .4s; }
+  .item.flash { background: var(--info-bg); }
+  .item-head { display: flex; justify-content: space-between; gap: 10px; align-items: flex-start; }
+  .item-title { font-weight: 600; }
+  .sev { flex: none; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; padding: 3px 7px; border-radius: 6px; }
+  .sev.crit { background: var(--issue-bg); color: var(--issue); }
+  .sev.major { background: var(--unsure-bg); color: var(--unsure); }
+  .sev.minor { background: var(--na-bg); color: var(--na); }
+  .how-btn { background: none; border: 0; padding: 4px 0; color: var(--info); font-size: 14px; cursor: pointer; }
+  .how { display: none; font-size: 14px; color: var(--muted); margin: 4px 0 6px; }
+  .item.show-how .how { display: block; }
+  .status { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin: 8px 0; }
+  .st { border: 1.5px solid var(--line); background: var(--bg); border-radius: 10px; padding: 10px 2px; font-size: 14px; font-weight: 600; cursor: pointer; min-height: 44px; }
+  .st[data-s="pass"][aria-pressed="true"] { background: var(--pass-bg); border-color: var(--pass); color: var(--pass); }
+  .st[data-s="issue"][aria-pressed="true"] { background: var(--issue-bg); border-color: var(--issue); color: var(--issue); }
+  .st[data-s="unsure"][aria-pressed="true"] { background: var(--unsure-bg); border-color: var(--unsure); color: var(--unsure); }
+  .st[data-s="na"][aria-pressed="true"] { background: var(--na-bg); border-color: var(--na); color: var(--na); }
+  .item[data-s="pass"] { box-shadow: inset 4px 0 0 var(--pass); }
+  .item[data-s="issue"] { box-shadow: inset 4px 0 0 var(--issue); }
+  .item[data-s="unsure"] { box-shadow: inset 4px 0 0 var(--unsure); }
+  .item[data-s="na"] { box-shadow: inset 4px 0 0 var(--na); }
+  textarea { width: 100%; min-height: 44px; resize: none; padding: 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg); color: var(--text); font: inherit; font-size: 16px; overflow: hidden; }
+  .bottombar { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1px solid var(--line); padding: 10px 12px calc(10px + env(safe-area-inset-bottom)); }
+  .bottombar button { display: block; width: 100%; max-width: 720px; margin: 0 auto; background: var(--brand); color: #fff; border: 0; border-radius: 12px; padding: 14px; font-size: 17px; font-weight: 700; cursor: pointer; }
+  footer { font-size: 13px; color: var(--muted); padding: 8px 4px 24px; }
+  footer ul { padding-left: 18px; }
+  .link-btn { background: none; border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; cursor: pointer; font-size: 14px; }
+  .danger { color: var(--issue); }
+  /* Review sheet */
+  .sheet { position: fixed; inset: 0; z-index: 50; background: var(--bg); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  .sheet[hidden] { display: none; }
+  .sheet-head { position: sticky; top: 0; background: var(--card); border-bottom: 1px solid var(--line); padding: calc(12px + env(safe-area-inset-top)) 16px 12px; display: flex; justify-content: space-between; align-items: center; z-index: 2; }
+  .sheet-head h2 { margin: 0; font-size: 18px; }
+  .sheet-head button { background: var(--text); color: var(--card); border: 0; border-radius: 99px; padding: 8px 16px; font-weight: 600; cursor: pointer; }
+  .sheet-body { max-width: 720px; margin: 0 auto; padding: 12px 12px calc(32px + env(safe-area-inset-bottom)); }
+  .verdict { border-radius: 14px; padding: 16px; margin-bottom: 12px; border: 1.5px solid; }
+  .verdict h3 { margin: 0 0 6px; font-size: 19px; }
+  .verdict p { margin: 0; }
+  .verdict.red { background: var(--issue-bg); border-color: var(--issue); }
+  .verdict.red h3 { color: var(--issue); }
+  .verdict.amber { background: var(--unsure-bg); border-color: var(--unsure); }
+  .verdict.amber h3 { color: var(--unsure); }
+  .verdict.blue { background: var(--info-bg); border-color: var(--info); }
+  .verdict.blue h3 { color: var(--info); }
+  .verdict.green { background: var(--pass-bg); border-color: var(--pass); }
+  .verdict.green h3 { color: var(--pass); }
+  .rv h3 { font-size: 16px; margin: 0 0 8px; }
+  .rv ol, .rv ul { margin: 0; padding-left: 20px; }
+  .rv li { margin-bottom: 8px; }
+  .rv .note { display: block; font-size: 14px; color: var(--muted); font-style: italic; margin-top: 2px; word-break: break-word; }
+  .rv .adv { display: block; font-size: 14px; margin-top: 2px; }
+  .rv .cost { display: inline-block; font-size: 12px; font-weight: 700; color: var(--unsure); }
+  .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; text-align: center; margin-bottom: 12px; }
+  .stats div { background: var(--card); border: 1px solid var(--line); border-radius: 12px; padding: 8px 2px; font-size: 12px; color: var(--muted); }
+  .stats b { display: block; font-size: 20px; color: var(--text); }
+  .actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+  .actions button { border: 0; border-radius: 12px; padding: 13px 6px; font-weight: 700; cursor: pointer; background: var(--text); color: var(--card); }
+  .actions button.secondary { background: var(--card); color: var(--text); border: 1px solid var(--line); }
+  .toast { position: fixed; left: 50%; bottom: calc(96px + env(safe-area-inset-bottom)); transform: translateX(-50%); background: var(--text); color: var(--card); padding: 10px 16px; border-radius: 99px; font-size: 14px; z-index: 60; opacity: 0; transition: opacity .2s; pointer-events: none; }
+  .toast.on { opacity: 1; }
+  .copybox { width: 100%; min-height: 200px; font-size: 13px; overflow: auto; }
+</style>
+</head>
+<body>
+<header class="top">
+  <div class="top-row">
+    <div>
+      <h1>2012 Mazda3 · ~165k miles</h1>
+      <button class="vin" id="vinBtn" title="Copy VIN">VIN JM1BL1V86C1643603 ⧉</button>
+    </div>
+    <div class="saved" id="saved" aria-live="polite"></div>
+  </div>
+  <div class="progress"><div class="bar" id="bar"></div></div>
+  <div class="counts" id="counts"></div>
+</header>
+
+<main>
+  <details class="card intro" id="intro" open>
+    <summary>How to use this checklist</summary>
+    <ul>
+      <li>For each check, tap <b>✓ Pass</b>, <b>✗ Issue</b>, <b>? Unsure</b> or <b>N/A</b>. Tap again to clear.</li>
+      <li>Add a comment on anything: what you saw, heard or were told.</li>
+      <li>Tap <b>How</b> for exactly what to look for on this car.</li>
+      <li>Tap <b>Review my checks</b> any time, even halfway through. You'll get a verdict, flagged notes, repair cost estimates and your next steps.</li>
+      <li>Everything saves automatically <b>on this phone only</b>. Nothing gets uploaded. Use <b>Copy report</b> in the review to paste your results into ChatGPT or Claude for a second opinion.</li>
+      <li>Tip: add this page to your Home Screen. iPhone: Share → <i>Add to Home Screen</i>. Android: ⋮ → <i>Add to Home screen</i>.</li>
+    </ul>
+  </details>
+
+  <section class="card">
+    <div class="info-grid">
+      <label>Asking price ($)<input id="i-price" data-info="price" inputmode="numeric" placeholder="e.g. 5500"></label>
+      <label>Odometer you saw<input id="i-odo" data-info="odo" inputmode="numeric" placeholder="e.g. 165,240"></label>
+      <label>Seller / location<input id="i-seller" data-info="seller" placeholder="Private / dealer"></label>
+      <label>Date<input id="i-date" data-info="date" type="date"></label>
+    </div>
+  </section>
+
+  <div class="filters" role="group" aria-label="Filter checks">
+    <button class="chip" data-f="all" aria-pressed="true">All</button>
+    <button class="chip" data-f="todo" aria-pressed="false">To do</button>
+    <button class="chip" data-f="issue" aria-pressed="false">Issues</button>
+    <button class="chip" data-f="unsure" aria-pressed="false">Unsure</button>
+    <button class="chip" data-f="done" aria-pressed="false">Done</button>
+  </div>
+
+  <div id="list"></div>
+
+  <footer>
+    <p><b>Useful links</b></p>
+    <ul>
+      <li><a href="https://www.nhtsa.gov/recalls" target="_blank" rel="noopener">NHTSA recall lookup</a> (enter the VIN)</li>
+      <li><a href="https://vpic.nhtsa.dot.gov/decoder/" target="_blank" rel="noopener">NHTSA VIN decoder</a> (confirms engine &amp; trim)</li>
+      <li><a href="https://www.nicb.org/vincheck" target="_blank" rel="noopener">NICB VINCheck</a> (free theft &amp; salvage check)</li>
+      <li><a href="https://www.mazdausa.com/siteassets/pdf/owners-optimized/2012/mazda3-5door/2012-mazda3-maintenance-schedule.pdf" target="_blank" rel="noopener">Mazda 2012 Mazda3 maintenance schedule (PDF)</a></li>
+    </ul>
+    <p>Engine, recall and history details for this specific VIN aren't verified. Use the links above to confirm them. Cost ranges are rough US independent-shop estimates for budgeting and negotiation, not quotes.</p>
+    <p><button class="link-btn danger" id="resetBtn">Reset all checks</button></p>
+  </footer>
+</main>
+
+<div class="bottombar"><button id="reviewBtn">Review my checks &amp; comments</button></div>
+
+<div id="review" class="sheet" hidden role="dialog" aria-modal="true" aria-labelledby="reviewTitle">
+  <div class="sheet-head"><h2 id="reviewTitle">Your review</h2><button id="closeReview">Back to checklist</button></div>
+  <div class="sheet-body" id="reviewBody"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var VIN = "JM1BL1V86C1643603";
+  var STORE_KEY = "mazda3-ppi-" + VIN + "-v1";
+
+  // sev: crit = can be a deal-breaker, major = costly if bad, minor = small stuff
+  // cost: rough repair range if marked Issue. issue/unsure: advice shown in the review.
+  var SECTIONS = [
+    { id: "docs", title: "1. Paperwork & history", sub: "Before you go, or as soon as you arrive", items: [
+      { id: "docs-vin", t: "VIN matches everywhere", sev: "crit",
+        how: "Compare <b>" + VIN + "</b> with the plate on the dash (look through the windshield, driver side), the sticker in the driver's door jamb, the title and the registration. All four must match exactly.",
+        issue: "A VIN mismatch is a deal-breaker. It can mean a stolen car, swapped parts, or a paperwork problem you'll inherit. Don't pay until the title VIN matches the car.",
+        unsure: "Check the dash plate through the windshield and the door-jamb sticker against the title. It takes 30 seconds." },
+      { id: "docs-title", t: "Clean title in the seller's name", sev: "crit",
+        how: "Title should show the seller's name with no brand: Salvage, Rebuilt, Flood or Lemon. Ask: \"Is there a loan on it?\" If yes, there's a lien.",
+        issue: "A branded title cuts value 20–40% and can block insurance or financing. If the seller isn't on the title or there's a lien, only do the deal at the lender or a bank, where the loan gets paid off and the title is released to you.",
+        unsure: "Ask to see the physical title. Make sure the name matches the seller's ID and look for any brand stamped on it." },
+      { id: "docs-recalls", t: "Open recalls checked", sev: "minor",
+        how: "Enter the VIN at <a href=\"https://www.nhtsa.gov/recalls\" target=\"_blank\" rel=\"noopener\">nhtsa.gov/recalls</a>. Open recalls get fixed free at any Mazda dealer. (If it's a hatchback, 2010–2013 Mazda3 liftgate struts had a recall.)",
+        issue: "Open recalls aren't a reason to walk away. A Mazda dealer fixes them free. Call a dealer with the VIN to confirm parts are available and book it after you buy.",
+        unsure: "Takes 1 minute: nhtsa.gov/recalls → enter the VIN." },
+      { id: "docs-history", t: "Vehicle history report", sev: "major", cost: [0, 0],
+        how: "Carfax or AutoCheck (or free <a href=\"https://www.nicb.org/vincheck\" target=\"_blank\" rel=\"noopener\">NICB VINCheck</a> for theft/salvage). Look for accidents, number of owners, odometer readings that rise steadily, and auction, fleet, flood or rental history.",
+        issue: "Accident on record: ask what was repaired and inspect that area closely, including underneath. Airbag deployment or structural damage means walk away or price way down. Odometer readings that go backwards: walk away.",
+        unsure: "Ask the seller if they have a Carfax/AutoCheck, or buy one (~$25–$45). Worth it at this price point." },
+      { id: "docs-service", t: "Service records", sev: "major", cost: [300, 800],
+        how: "Look for regular oil changes, plus spark plugs (Mazda schedule: every ~75k miles, so they should have been done around 75k and 150k), coolant, brake fluid and transmission fluid. A stack of receipts is a great sign.",
+        issue: "No records at 165k isn't automatically a deal-breaker, but plan a catch-up service right away: oil, spark plugs, filters, coolant, brake fluid, transmission fluid. Roughly $300–$800 at an independent shop. Use it in negotiation.",
+        unsure: "Ask: \"When were the spark plugs, coolant and transmission fluid last done?\" Any shop name lets you call and confirm." },
+      { id: "docs-config", t: "Confirm engine & transmission", sev: "minor",
+        how: "The VIN's 8th character is <b>8</b>, which on 2012–2013 Mazda3s likely means the 2.0L <b>SKYACTIV-G</b> (155 hp). Confirm with a SKYACTIV badge on the trunk or engine cover, or the <a href=\"https://vpic.nhtsa.dot.gov/decoder/\" target=\"_blank\" rel=\"noopener\">NHTSA decoder</a>. Note whether it's automatic or manual (both 6-speed).",
+        issue: "If it isn't what the listing said, ask why and re-check the price against the correct trim and engine.",
+        unsure: "Run the VIN through the free NHTSA decoder, or look for the SKYACTIV badge. Both engines are fine. SKYACTIV gets noticeably better MPG." },
+      { id: "docs-keys", t: "Keys, manual & spare tire", sev: "minor", cost: [150, 350],
+        how: "How many keys/fobs? Spare key, owner's manual, wheel-lock key (if it has locking lug nuts), spare tire and jack in the trunk.",
+        issue: "A replacement chip key is about $150–$350 cut and programmed. Ask for that off the price if there's only one. A missing wheel-lock key or jack is cheap but annoying.",
+        unsure: "Ask the seller to bring every key and look under the trunk floor for the spare and jack." }
+    ]},
+    { id: "ext", title: "2. Exterior & body", sub: "Daylight, dry car if possible", items: [
+      { id: "ext-panels", t: "Panel gaps & paint match", sev: "major", cost: [0, 0],
+        how: "Crouch at each corner and look down the sides. Uneven gaps, slightly different color between panels, or paint overspray on rubber seals and under the hood all point to accident repair.",
+        issue: "Repainted panels confirm a past accident. Cross-check the history report and have a mechanic look underneath for bent metal or welds. Even a good repair justifies a lower price.",
+        unsure: "Compare color under strong light at different angles. Ask the seller directly: \"Has it ever been in an accident or repainted?\"" },
+      { id: "ext-rust", t: "Rust check", sev: "major", cost: [200, 1500],
+        how: "Use your phone flashlight on the rear wheel arches, rocker panels under the doors, door bottoms, trunk floor under the spare tire, and underneath (subframes, brake lines). Surface rust is normal at 14 years. Bubbling paint, flaking or holes are not.",
+        issue: "Bubbling on arches or rockers will spread. Repair ≈ $200–$1,500 depending on how bad it is. Rot through metal, especially underneath, can be structural: have a mechanic check it on a lift, and usually walk away.",
+        unsure: "Get the car on a lift during a pre-purchase inspection. It's the only way to really see underneath." },
+      { id: "ext-glass", t: "Windshield & glass", sev: "minor", cost: [50, 400],
+        how: "Look for chips and cracks, especially in the driver's line of sight (can fail state inspection).",
+        issue: "Chip repair ≈ $50–$100 (often free with comprehensive insurance). A crack may need a new windshield ≈ $250–$400.",
+        unsure: "Run a finger over any marks. If it catches, it's a chip." },
+      { id: "ext-lights", t: "All exterior lights", sev: "minor", cost: [10, 150],
+        how: "Have someone help: low and high beams, front/rear/mirror turn signals, brake lights (including the third one up high), reverse lights, plate light. Also check for hazy or yellow headlight lenses.",
+        issue: "Bulbs are $10–$30. Hazy headlights: a $20 restoration kit. Headlights that flicker when braking are a known issue on this generation. A Mazda dealer can reprogram the engine computer.",
+        unsure: "Back up to a wall or shop window at dusk to see the lights reflected." },
+      { id: "ext-tires", t: "Tires", sev: "major", cost: [400, 700],
+        how: "Penny test (if you can see all of Lincoln's head, the tread is too low). Check wear across each tire: worn inner or outer edges mean alignment or suspension issues. All four should match. Check the DOT date code: 4 digits, e.g. 2319 = week 23 of 2019. Tires over ~6 years old should be replaced.",
+        issue: "A set of 4 decent tires runs about $400–$700 installed. Uneven wear also means an alignment (~$100) and maybe suspension parts. Factor both into your offer.",
+        unsure: "Find the 4-digit date code on each sidewall and use a penny in a few spots on each tire." },
+      { id: "ext-trunk", t: "Trunk / hatch & spare-tire well", sev: "minor", cost: [50, 200],
+        how: "Trunk/hatch opens and stays up on its own, the seal is intact, and there's no water, rust or musty smell under the floor where the spare sits.",
+        issue: "Water in the spare well means a leaking seal or taillight gasket. Check for rust and mildew. A hatch that won't stay up needs struts (~$50–$200), possibly free if a recall is open.",
+        unsure: "Lift the trunk floor cover and touch the carpet and the spare well for dampness." },
+      { id: "ext-wheels", t: "Wheels", sev: "minor", cost: [0, 300],
+        how: "Look for curb rash, bends or cracks, and make sure all lug nuts are present.",
+        issue: "Curb rash is cosmetic. A bent wheel causes vibration (repair ≈ $100–$150, used replacement ≈ $100–$300).",
+        unsure: "Look at the inner lip of each wheel with your flashlight." }
+    ]},
+    { id: "eng", title: "3. Under the hood", sub: "Engine COLD (ask the seller not to start it before you arrive)", items: [
+      { id: "eng-cold", t: "Engine was cold when you arrived", sev: "major",
+        how: "Touch the hood. If it's warm, the seller may have warmed it up to hide a hard start, smoke or noises.",
+        issue: "If it was already warm, ask to come back, wait until it cools (1–2 hrs), or at least have a mechanic do a cold start before you buy.",
+        unsure: "Put your hand on the hood and the radiator hose. Warm means it's been run recently." },
+      { id: "eng-oil", t: "Engine oil level & condition", sev: "crit", cost: [0, 0],
+        how: "Pull the dipstick: level between the marks, color amber to black is OK. <b>Milky / chocolate-milk</b> = coolant in the oil. Look under the oil filler cap for thick sludge. Very low oil means it's burning or leaking oil.",
+        issue: "Milky oil = likely head gasket or cracked head: walk away. Sludge = neglected oil changes, high risk. Just low? Ask how often they add oil. More than ~1 quart per 1,000 miles is a real problem on a 165k-mile engine.",
+        unsure: "Wipe the dipstick, reinsert, pull again. Photograph it and the underside of the oil cap." },
+      { id: "eng-coolant", t: "Coolant", sev: "crit", cost: [100, 200],
+        how: "Check the plastic overflow reservoir. <b>Never open the radiator cap on a hot engine.</b> Level between the marks, clean color (Mazda's is usually green), with no oily film or rusty-brown sludge.",
+        issue: "Oil in the coolant = head gasket: walk away. Low or rusty coolant means a neglected cooling system. Budget a coolant flush and pressure test (≈ $100–$200) and watch for overheating.",
+        unsure: "Look at the reservoir with your flashlight from the side to see the level and color." },
+      { id: "eng-leaks", t: "Leaks (engine & underneath)", sev: "major", cost: [150, 1200],
+        how: "Look at the engine and on the ground under it. Brown/black = oil, green and sweet-smelling = coolant, red = transmission fluid. Common spots: valve cover gasket (top of engine), oil pan (bottom), rear main seal (between engine and transmission). A freshly power-washed engine can hide leaks.",
+        issue: "Valve cover gasket ≈ $150–$300, oil pan reseal ≈ $200–$400, rear main seal ≈ $600–$1,200. Minor seepage is normal at 165k. Active drips are a negotiation point.",
+        unsure: "Look where the seller normally parks for stains, and slide a piece of cardboard under the engine while you check everything else." },
+      { id: "eng-belts", t: "Drive belt & hoses", sev: "minor", cost: [50, 250],
+        how: "Serpentine belt: no cracks, fraying or glazing. Hoses: firm, not soft, cracked or bulging. (This engine uses a timing <b>chain</b>, so there's no timing belt to replace.)",
+        issue: "Belt ≈ $50–$150; belt + tensioner ≈ $150–$250; hoses ≈ $50–$200 each. Cheap, but do it soon.",
+        unsure: "Squeeze the large radiator hoses (engine cold). They should feel firm, not crunchy or mushy." },
+      { id: "eng-battery", t: "Battery", sev: "minor", cost: [150, 250],
+        how: "Find the date sticker on the battery. Over 4–5 years old is near the end. Check for white/green corrosion on the terminals.",
+        issue: "A new battery is about $150–$250 installed. Easy to negotiate.",
+        unsure: "Many auto-parts stores test batteries free. Slow cranking on cold start is a clue." },
+      { id: "eng-brakefluid", t: "Brake fluid", sev: "minor", cost: [80, 150],
+        how: "Reservoir near the driver side at the back of the engine bay. Level between MIN and MAX. Color: honey/light = fresh, dark brown = overdue.",
+        issue: "Brake fluid flush ≈ $80–$150. A low level can also mean worn pads or a leak. Check the brakes on the test drive.",
+        unsure: "Shine your flashlight through the translucent reservoir to see the color." }
+    ]},
+    { id: "start", title: "4. Cold start & idle", sub: "Have a helper watch the exhaust", items: [
+      { id: "start-dash", t: "Dash lights at key-on (bulb check)", sev: "major",
+        how: "Turn the key to ON without starting. Check engine, airbag, ABS and battery lights should all light up briefly. If the check engine or airbag light <i>never</i> lights up, someone may have disabled the bulb to hide a problem.",
+        issue: "A warning light that doesn't do its bulb check is a red flag for a hidden fault. Have a mechanic scan all modules (engine, ABS, airbag) before buying.",
+        unsure: "Watch the cluster closely during the first 2 seconds of key-on. Take a video." },
+      { id: "start-cold", t: "Cold start sounds", sev: "major", cost: [100, 1500],
+        how: "Should start within a couple of seconds. Listen for a rattle in the first 1–3 seconds (timing chain/VVT), a squeal (belt), or a knock.",
+        issue: "A brief rattle at cold start can be timing chain stretch or a VVT actuator, ≈ $800–$1,500+. A knock that continues as it warms = walk away. A squeal that goes away = belt/tensioner (≈ $100–$250).",
+        unsure: "Record a video with sound on cold start so a mechanic can listen to it." },
+      { id: "start-smoke", t: "Exhaust smoke", sev: "crit", cost: [0, 0],
+        how: "Watch the tailpipe on startup and when revving to ~3,000 rpm. Light white vapor on a cold day that clears quickly is normal. <b>Blue</b> = burning oil. <b>Thick white, sweet-smelling</b> that doesn't clear = coolant. <b>Black</b> = running rich.",
+        issue: "Blue smoke = worn rings or valve seals: expensive and gets worse. Thick white smoke that won't clear = head gasket: walk away. Black smoke = fuel/sensor issue, get codes read.",
+        unsure: "Have a helper rev it while you watch from behind, and repeat after the test drive." },
+      { id: "start-idle", t: "Smooth idle", sev: "major", cost: [150, 600],
+        how: "Revs start higher when cold and settle to a steady idle as it warms. Shaking, rpm hunting up and down, or stumbling can mean a misfire, carbon buildup (common on direct-injection SKYACTIV), a vacuum leak, or worn engine mounts. A light ticking from the injectors is normal on SKYACTIV.",
+        issue: "Get the codes read. Common fixes: ignition coil (≈ $80–$150 each), spark plugs, or intake-valve carbon cleaning (≈ $300–$600). Vibration felt in the seat or steering wheel can also be engine mounts.",
+        unsure: "Put a coin on its edge on the engine cover or watch the tach for 30 seconds. It should stay steady." },
+      { id: "start-mounts", t: "Engine mount test", sev: "major", cost: [150, 500],
+        how: "Hood open, helper watching the engine, foot firmly on the brake. Automatic: shift between Drive and Reverse a few times. Manual: blip the throttle in neutral. The engine should rock slightly, not jump or clunk.",
+        issue: "Engine and transmission mounts are a common wear item on this Mazda3: ≈ $150–$500 depending on the mount. Not a deal-breaker. Negotiate.",
+        unsure: "Watch the top of the engine during D↔R shifts. A big lurch or a clunk you can hear means worn mounts." },
+      { id: "start-warnings", t: "No warning lights after starting", sev: "major", cost: [0, 400],
+        how: "Within a few seconds of starting, check engine, ABS, airbag, traction control and battery lights should all go out and stay out.",
+        issue: "Any light that stays on: get the codes read before buying (free at most auto-parts stores, or with a $20 Bluetooth OBD-II scanner). Airbag light = possible accident damage or a wiring fault. Don't accept \"it's just a sensor.\"",
+        unsure: "Take a photo of the cluster after the engine settles." }
+    ]},
+    { id: "int", title: "5. Interior & electronics", sub: "Engine running", items: [
+      { id: "int-odo", t: "Odometer & wear match the miles", sev: "crit",
+        how: "Reading matches the listing, title and history report (~165k). Wear on the steering wheel, shifter, pedals and driver-seat bolster should look consistent with the miles.",
+        issue: "If the odometer doesn't match the title/history, walk away. Odometer fraud is illegal and kills resale value.",
+        unsure: "Photograph the odometer and compare it to the last reading on the history report." },
+      { id: "int-ac", t: "A/C & heat", sev: "major", cost: [150, 1500],
+        how: "A/C ice cold within a couple of minutes. Heat gets hot once the engine warms. Test all fan speeds, every vent mode (face, feet, defrost) and recirculation.",
+        issue: "Weak A/C: could be a recharge (≈ $150–$250) or a compressor/condenser (≈ $800–$1,500). Fan only works on high = blower resistor (≈ $30–$100). No heat = low coolant, thermostat, or heater core. Check the coolant first.",
+        unsure: "Put your hand on the center vent on max A/C for 3–5 minutes. It should feel properly cold." },
+      { id: "int-power", t: "Windows, locks, mirrors, sunroof", sev: "minor", cost: [100, 400],
+        how: "Every window up and down, all door locks (buttons and key fob), mirror adjustment, sunroof if equipped. Look at the headliner around the sunroof for water stains.",
+        issue: "Window regulator/motor ≈ $150–$400 per door. Lock actuator ≈ $100–$300. Sunroof leaks are usually clogged drains (cheap to clear).",
+        unsure: "Go door to door. It takes 2 minutes." },
+      { id: "int-audio", t: "Radio, Bluetooth & controls", sev: "minor",
+        how: "All speakers work (use balance/fade), Bluetooth pairs if equipped, AUX/USB, steering-wheel buttons, and the info display is readable.",
+        issue: "Usually cheap or optional. A dead speaker or display is a small negotiation point.",
+        unsure: "Pair your phone and play something through each speaker." },
+      { id: "int-dash", t: "Dashboard surface", sev: "minor", cost: [40, 60],
+        how: "2010–2013 Mazda3 dashboards can get sticky, shiny or melted in hot climates. Mazda ran a warranty-extension program for this in some hot-weather states (likely expired now).",
+        issue: "Cosmetic, but it causes windshield glare. Ask a Mazda dealer if this VIN was ever covered. A dash cover (~$40–$60) is the cheap fix.",
+        unsure: "Press the top of the dash with a finger. It shouldn't feel tacky." },
+      { id: "int-wipers", t: "Wipers, washer, horn, cruise", sev: "minor", cost: [20, 150],
+        how: "Wipers on every speed including intermittent, washer fluid sprays, horn works, cruise control sets and resumes (check during the drive).",
+        issue: "Wiper blades ≈ $20–$40. Washer pump ≈ $50–$150. Small stuff, but count it.",
+        unsure: "Test them while parked. Test cruise on the highway part of the drive." },
+      { id: "int-seats", t: "Seats & seatbelts", sev: "major", cost: [50, 300],
+        how: "Seat adjusters work, and the driver's seat doesn't rock or shift when you lean back hard. Every seatbelt latches, unlatches and retracts fully.",
+        issue: "Seatbelts are a safety item and must work. A loose or rocking seat needs its track/bolts checked (≈ $50–$300). Check NHTSA for any seat recall on this VIN.",
+        unsure: "Sit in the driver's seat and rock forward and back firmly. Buckle every belt once." },
+      { id: "int-flood", t: "Flood / water damage", sev: "crit",
+        how: "Sniff for a musty or mildew smell. Lift the floor mats and feel the carpet for dampness. Look for silt or mud under the seats, on the seat rails and in the spare-tire well, plus rust on seat bolts. Heavy air freshener can be covering something.",
+        issue: "Signs of flood damage = walk away. Flood cars develop electrical problems and corrosion that are expensive and never really end.",
+        unsure: "Pull up a corner of carpet near the door sill if you can, and shine your flashlight under the seats." }
+    ]},
+    { id: "drive", title: "6. Test drive", sub: "20+ minutes: city, bumps, highway. Radio off.", items: [
+      { id: "drive-trans", t: "Transmission / clutch", sev: "crit", cost: [800, 3500],
+        how: "<b>Automatic:</b> smooth, timely shifts up and down. No slipping (revs flare without speeding up), no harsh clunks, no delay going into D or R. Try the manual-shift mode too. <b>Manual:</b> clutch should bite around the middle of the pedal travel (biting near the top = worn). In 3rd/4th gear at ~2,000 rpm, floor it: revs shouldn't climb faster than speed (slipping). No grinding in any gear, including reverse.",
+        issue: "Automatic slipping or delayed engagement: walk away, or have a transmission shop check it. Rebuild/replacement ≈ $2,000–$3,500. Harsh or erratic shifts can be fluid or software, but get a diagnosis first. Manual: worn/slipping clutch ≈ $800–$1,400, so negotiate it off. Grinding = worn synchros (expensive).",
+        unsure: "Drive it longer once fully warm. Transmission problems often show up hot. Ask a mechanic to road-test it during the inspection." },
+      { id: "drive-accel", t: "Acceleration & power", sev: "major", cost: [150, 800],
+        how: "Merge onto a highway or accelerate firmly: smooth pull through the rev range, no hesitation, stumbling or jerking, and the check engine light doesn't flash.",
+        issue: "Hesitation or misfire: get codes read. Usually coils, plugs or carbon buildup (≈ $150–$800). A flashing check engine light = active misfire: stop and don't buy until it's diagnosed.",
+        unsure: "Try one firm acceleration from a stop and one from ~40 mph." },
+      { id: "drive-highway", t: "Highway speed (60–70 mph)", sev: "major", cost: [60, 450],
+        how: "Feel for vibration in the steering wheel or seat. Listen for a hum or growl that changes when you weave gently left and right (wheel bearing), and for excessive wind noise.",
+        issue: "Shake at speed: usually tire balancing (~$60) or a bent wheel. Humming that gets louder turning one way = wheel bearing (≈ $250–$450 per corner).",
+        unsure: "Gently weave in your lane at 50–60 mph and listen for the noise changing." },
+      { id: "drive-brakes", t: "Brakes", sev: "major", cost: [250, 600],
+        how: "Firm pedal. Car stops straight without pulling. No pulsing or shudder in the pedal (warped rotors), no squeal or grinding. Do one hard stop where it's safe.",
+        issue: "Grinding = pads worn to metal, probably rotors too (≈ $250–$450 per axle). Pulsing = rotors. Pulling to one side = sticking caliper (≈ $150–$300). A spongy or sinking pedal needs checking before you drive it home.",
+        unsure: "Do one firm stop from ~40 mph on an empty road with hands loose on the wheel." },
+      { id: "drive-steering", t: "Steering & alignment", sev: "major", cost: [100, 1200],
+        how: "On a straight, flat road the car tracks straight, the steering wheel is centered, there's no looseness, and no whine or groan when turning.",
+        issue: "Off-center wheel or a pull = alignment (~$100), possibly after worn parts. Whining steering: the older 2.0 MZR versions use an electro-hydraulic pump that can fail (≈ $500–$1,200). SKYACTIV versions use electric steering.",
+        unsure: "On a straight road, loosen your grip for a second (safely) and see if it drifts." },
+      { id: "drive-suspension", t: "Suspension over bumps", sev: "major", cost: [150, 1200],
+        how: "Drive slowly over speed bumps and rough pavement with the windows down. Listen for clunks, knocks and rattles. The car should settle after a bump, not keep bouncing.",
+        issue: "Clunks are common on a 165k-mile Mazda3: sway-bar end links (≈ $100–$200), front struts/mounts (≈ $250–$400 each), lower control arms (≈ $480–$620 for both). Not a deal-breaker. Get an estimate and negotiate.",
+        unsure: "Find a speed bump and go over it slowly, once straight and once at an angle." },
+      { id: "drive-turns", t: "Full-lock turns (parking lot)", sev: "major", cost: [150, 400],
+        how: "Turn the wheel all the way left and drive a slow circle, then all the way right. Clicking or popping = worn CV axle.",
+        issue: "CV axle replacement ≈ $150–$400 per side. Also look for torn CV boots (grease sprayed inside the wheel).",
+        unsure: "Do it with the windows down in an empty lot." }
+    ]},
+    { id: "post", title: "7. After the drive", sub: "Engine hot, park on clean pavement", items: [
+      { id: "post-temp", t: "Temperature / overheating", sev: "crit",
+        how: "Most 2010–2013 Mazda3s have no temperature needle, just a blue \"cold\" light and a red \"hot\" warning light. The blue light should go off after a few minutes of driving, and the red one should never come on. Let it idle 5 minutes: the radiator fan should cycle on.",
+        issue: "Overheating often damages the head gasket. Walk away unless a mechanic finds a simple cause (fan, thermostat, hose).",
+        unsure: "Let it idle for 5–10 minutes after the drive and listen for the radiator fan kicking on." },
+      { id: "post-leaks", t: "Look underneath again", sev: "major", cost: [100, 1200],
+        how: "After 5 minutes of idling, check the ground for fresh drips and look again at the engine for wet spots.",
+        issue: "Fresh drips after driving: note the color (brown = oil, green = coolant, red = transmission, clear = A/C water, which is normal). Get the source identified and priced.",
+        unsure: "Put cardboard under the car while it idles and check it afterwards." },
+      { id: "post-obd", t: "OBD-II code scan", sev: "major", cost: [0, 0],
+        how: "Plug a scanner into the port under the dash on the driver side. Check stored and pending codes, <b>and readiness monitors</b>. Lots of monitors \"not ready\" means codes were probably cleared recently to hide something. Type any codes (e.g. P0420) in the comment and the review will explain them.",
+        issue: "Write the codes in the comment and tap Review. Recently cleared codes: ask why, and insist on a mechanic's inspection.",
+        unsure: "A $20 Bluetooth OBD-II adapter + a free app works, or ask the inspecting mechanic to scan it." },
+      { id: "post-smell", t: "Smells after driving", sev: "major", cost: [0, 0],
+        how: "Walk around the car: burning oil (leak dripping on the exhaust), sweet syrup (coolant), acrid burning (clutch on a manual, or brakes).",
+        issue: "Burning oil = a leak onto hot parts, so find and price it. Sweet smell = coolant leak, so check for overheating. Burnt clutch smell after normal driving = worn clutch.",
+        unsure: "Sniff near the wheels, hood seam and tailpipe right after the drive." }
+    ]},
+    { id: "deal", title: "8. Inspection & the deal", sub: "Before money changes hands", items: [
+      { id: "deal-ppi", t: "Independent pre-purchase inspection", sev: "major", cost: [0, 0],
+        how: "Pay a local independent mechanic (≈ $100–$200) to inspect it on a lift: rust, leaks, suspension, CV boots, exhaust, brakes, codes. Strongly recommended at 165k miles.",
+        issue: "A seller who refuses an inspection is a major red flag. At 165k miles, walk away unless the price is very low and you're ready for surprises.",
+        unsure: "Call a well-reviewed independent shop near the seller and ask for a \"pre-purchase inspection.\" Most can fit one in within a day or two." },
+      { id: "deal-price", t: "Fair price checked", sev: "minor",
+        how: "Look up private-party value on KBB or Edmunds for a 2012 Mazda3 with your exact trim and ~165k miles. Subtract repair estimates from this review.",
+        issue: "If the asking price is above market, show the seller the KBB/Edmunds numbers and your repair list.",
+        unsure: "KBB.com → Price new/used cars → enter year, model, trim, miles, ZIP." },
+      { id: "deal-paper", t: "Paperwork at sale", sev: "crit",
+        how: "Title signed over correctly (no errors or white-out), odometer disclosure filled in, bill of sale with VIN, price, date and both signatures. Get all keys. Arrange insurance and follow your state's registration steps before driving away.",
+        issue: "Don't pay until the title is ready to be signed over correctly. Title errors can make registration a nightmare.",
+        unsure: "Check your state DMV website for what a private sale needs (some states require notarization or a specific bill-of-sale form)." }
+    ]}
+  ];
+
+  // Keyword rules applied to comments. neg:false = don't skip when preceded by "no/not/...".
+  var RULES = [
+    { k: "headgasket", sev: "crit", re: /milky|chocolate|mayo|oil in (the )?coolant|coolant in (the )?oil|head gasket/, msg: "Milky oil or oil/coolant mixing usually means a blown head gasket or cracked head. Walk away." },
+    { k: "title", sev: "crit", re: /salvage|rebuilt|flood title|branded|lemon|junk title/, msg: "A branded title (salvage/rebuilt/flood) cuts value 20–40% and can block insurance or financing. Walk away unless the price is dramatically lower and a mechanic signs off." },
+    { k: "flood", sev: "crit", re: /musty|mildew|mou?ld\b|moldy|silt|mud under|water ?line|flood/, msg: "Musty smell, silt or mold are classic flood-car signs. Flood damage causes endless electrical and corrosion problems. Walk away." },
+    { k: "overheat", sev: "crit", re: /overheat|over heat|red (temp|temperature )?light|hot light|temp(erature)? light|boil/, msg: "Overheating often damages the head gasket. Don't buy unless a mechanic finds a simple cause (fan, thermostat, hose)." },
+    { k: "slip", sev: "crit", re: /slip|flare|revs? (up )?without|rpm (goes|went|jumps?) up/, msg: "Sounds like a slipping transmission (automatic) or clutch (manual). Automatic rebuild ≈ $2,000–$3,500, clutch job ≈ $800–$1,400. Get it diagnosed and priced before going further." },
+    { k: "rot", sev: "crit", skipPre: /dry ?$/, re: /\b(holes?|rot|rotted|rotten|rusted (through|out)|perforat\w*|crumbl\w*)\b/, msg: "Rust that has rotted through metal can be structural and unsafe. Have a mechanic check it on a lift. Usually a walk-away." },
+    { k: "odo", sev: "crit", neg: false, re: /rollback|rolled back|(odometer|mileage|miles) (doesn't|does not|didn't|did not|don't) match/, msg: "Odometer mismatch = possible fraud. Walk away." },
+    { k: "smoke", sev: "major", re: /\bsmok(e|ing|y)\b/, msg: "Smoke: blue = burning oil, thick white that won't clear = coolant/head gasket, black = running rich. Light white vapor on a cold start that clears is normal." },
+    { k: "knock", sev: "major", re: /knock/, msg: "Engine knocking at 165k can mean worn bearings, low oil or pre-ignition. Have a mechanic listen before buying. A deep knock is a walk-away." },
+    { k: "tick", sev: "minor", re: /\btick(ing|s)?\b|tapping/, msg: "A light, fast ticking is normal on the direct-injection SKYACTIV (fuel injectors). A louder tap that rises with revs can be valvetrain. Ask a mechanic." },
+    { k: "rattle", sev: "major", re: /rattl/, msg: "Rattle: on cold start it may be timing chain/VVT (≈ $800–$1,500+). From underneath it's often a loose heat shield (cheap). Pin down where it comes from." },
+    { k: "clunk", sev: "major", re: /clunk|thud|\bbang|clank/, msg: "Clunks usually mean worn suspension parts (sway-bar links, struts, control arms) or engine mounts. Common at this mileage, typically $150–$600 per fix. Get an estimate and negotiate." },
+    { k: "grind", sev: "major", re: /grind/, msg: "Grinding in the brakes = pads/rotors worn to metal (≈ $250–$450 per axle). Grinding when shifting a manual = worn synchros (expensive)." },
+    { k: "leak", sev: "major", re: /leak|drip|seep|puddle|wet spot|oily/, msg: "Leak: note the color (brown/black = oil, green = coolant, red = transmission). Valve-cover gasket ≈ $150–$300, rear main seal ≈ $600–$1,200." },
+    { k: "rust", sev: "major", re: /\brust/, msg: "Surface rust is normal on a 14-year-old car. Bubbling paint on arches or rockers will spread. Check underneath with a flashlight. Rot through metal is a walk-away." },
+    { k: "cel", sev: "major", re: /check engine|\bcel\b|engine light|\bmil\b|warning light|light (is |was |stays |stayed )?on\b|light came on/, msg: "A warning light that stays on needs its codes read before you buy: free at most auto-parts stores or with a $20 OBD-II scanner. Don't accept \"it's just a sensor.\"" },
+    { k: "airbag", sev: "major", re: /airbag|\bsrs\b/, msg: "An airbag light means the airbags may not deploy. It can be a seat connector or clock spring ($150–$400) or past accident damage. Get it scanned." },
+    { k: "vibe", sev: "major", re: /vibrat|\bshak(e|es|ing|y)\b|shudder|wobbl/, msg: "Vibration at idle points to engine mounts or a misfire, at highway speed to tire balance or a bent wheel, and when braking to warped rotors." },
+    { k: "pull", sev: "major", re: /\b(pulls?|pulling|drifts?|drifting) (to |left|right)/, msg: "Pulling: alignment (~$100), uneven tire pressure, or a sticking brake caliper if it pulls when braking." },
+    { k: "hesitate", sev: "major", re: /hesitat|stumbl|jerk|\bbog|misfir|sputter|\bstall|rough idle|\bsurg(e|es|ing)\b/, msg: "Hesitation or misfire on this engine: coils (≈ $80–$150 each), spark plugs, or carbon buildup on the intake valves (cleaning ≈ $300–$600). Get the codes read." },
+    { k: "shift", sev: "major", re: /harsh|hard shift|late shift|delay|slow to engage|\bjolt|lurch|bang into gear/, msg: "Harsh or delayed shifts can be fluid, software (TCM) or internal wear. Get a transmission shop's diagnosis before buying. This is the costliest part to get wrong." },
+    { k: "noise", sev: "major", re: /whin(e|ing)|\bwhir|\bhum(s|ming)?\b|growl|drone|howl/, msg: "Hum or growl that changes when turning = wheel bearing (≈ $250–$450 each). Whine when steering = power steering. Whine that rises with speed = possible transmission issue." },
+    { k: "squeal", sev: "minor", re: /squeal|squeak|screech|chirp/, msg: "Squeal at startup = belt/tensioner (≈ $100–$250). When braking = pads getting thin." },
+    { k: "smell", sev: "major", unless: ["flood", "smoker", "oilburn"], re: /smell|odou?r|burning/, msg: "Burning-oil smell = a leak dripping on the exhaust. Sweet syrup = coolant leak. Acrid burning after driving a manual = clutch." },
+    { k: "tires", sev: "major", re: /bald|cords? showing|worn (out )?tires?|low tread|dry ?rot|sidewall/, msg: "Worn or aged tires: a set of 4 is roughly $400–$700 installed. Uneven wear also means alignment or suspension work." },
+    { k: "ac", sev: "major", neg: false, re: /warm air|blows warm|not cold|weak a\/?c|a\/?c (doesn't|does not|isn't|not)|no a\/?c|no cold/, msg: "A/C not cold: recharge ≈ $150–$250 if it's just low, compressor ≈ $800–$1,500. Ask for it to be fixed or knock it off the price." },
+    { k: "broken", sev: "minor", neg: false, re: /doesn't work|does not work|not working|broken|\bdead\b|won't|inop|\bstuck\b|\bfails?\b/, msg: "Something doesn't work. Get a repair price and include it in your offer." },
+    { k: "refused", sev: "major", neg: false, re: /refus|won't let|wouldn't let|declin/, msg: "A seller who refuses a test drive, an inspection, or showing paperwork is a big red flag." },
+    { k: "norecords", sev: "major", neg: false, re: /no (service )?records?|no history|no receipts|unknown|never (been )?(changed|done|replaced|serviced)|overdue/, msg: "No or overdue maintenance: budget a catch-up service (≈ $300–$800: oil, plugs, filters, coolant, brake and transmission fluid) and use it in negotiation." },
+    { k: "cleared", sev: "major", re: /cleared|\breset\b|not ready|incomplete monitors?/, msg: "Recently cleared codes or readiness monitors \"not ready\" can mean someone is hiding a problem. Ask why, drive it more, or get a mechanic's scan." },
+    { k: "lien", sev: "major", re: /\blien\b|\bloan\b|financed|not (in|on) (the )?(seller's|sellers|his|her|their) name|not the owner/, msg: "Lien or seller not on the title: complete the sale at the lender or a bank, so the lien gets paid off and the title is released to you." },
+    { k: "accident", sev: "major", re: /accident|collision|repaint|respray|overspray|body ?work|\bfiller\b|bondo|(paint|color|colour) (doesn't match|mismatch)|mismatched (paint|panel|color)/, msg: "Signs of past accident repair: check the history report and have a mechanic inspect for frame/unibody damage. Price it lower even if it was repaired well." },
+    { k: "onekey", sev: "minor", neg: false, re: /\bone key|\b1 key|single key|only (one|1)\b|no spare/, msg: "Only one key: a replacement chip key costs about $150–$350 cut and programmed. Ask for that off the price." },
+    { k: "oilburn", sev: "major", re: /burns? oil|burning oil|oil burn|adds? oil|adding oil|top(s|ping)? (it )?off|low oil|oil (is |was )?low/, msg: "Oil consumption: more than ~1 quart per 1,000 miles is a problem (worn rings or valve seals) and tends to get worse." },
+    { k: "dash", sev: "minor", re: /sticky|melt|shiny dash|gooey|tacky/, msg: "A sticky or melting dash is a known 2010–2013 Mazda3 issue (cosmetic). A dash cover (~$40–$60) is the cheap fix." },
+    { k: "smoker", sev: "minor", re: /cigarette|smoker|tobacco|\bvape/, msg: "Smoke odor is hard to remove fully and hurts resale. Ozone treatment or detailing ≈ $100–$250." },
+    { k: "crack", sev: "minor", re: /crack|\bchip(s|ped)?\b/, msg: "Windshield chip repair ≈ $50–$100. A crack in the driver's view may need a new windshield (≈ $250–$400). Cracked belts, hoses or tires should be replaced soon." }
+  ];
+  var POSITIVE = /\b(new|replaced|recently|receipts?|just (done|changed|replaced|serviced)|records?|documented|well maintained|one owner|1 owner|garaged|dealer serviced)\b/;
+
+  var OBD = {
+    P0300: ["Random/multiple misfire: plugs, coils, vacuum leak or carbon buildup. Get it diagnosed.", "major"],
+    P0301: ["Cylinder 1 misfire: often a coil or plug (swap coils to test).", "major"],
+    P0302: ["Cylinder 2 misfire: often a coil or plug.", "major"],
+    P0303: ["Cylinder 3 misfire: often a coil or plug.", "major"],
+    P0304: ["Cylinder 4 misfire: often a coil or plug.", "major"],
+    P0011: ["Intake cam timing over-advanced: oil level/quality or the VVT actuator. Can relate to timing chain wear.", "major"],
+    P0012: ["Intake cam timing over-retarded: oil level/quality or the VVT actuator.", "major"],
+    P0016: ["Crank/cam correlation: can mean a stretched timing chain (≈ $800–$1,500+). Get it checked.", "major"],
+    P0101: ["MAF sensor range/performance: dirty or failing MAF (clean it, or ≈ $100–$250 to replace).", "minor"],
+    P0128: ["Thermostat stuck open or slow to warm: thermostat ≈ $150–$300.", "minor"],
+    P0171: ["System too lean: vacuum leak, dirty MAF or weak fuel delivery.", "major"],
+    P0172: ["System too rich: sensor, injector or fuel pressure issue.", "major"],
+    P2187: ["Lean at idle: vacuum leak (PCV hose, intake gasket) is most common.", "minor"],
+    P0335: ["Crankshaft position sensor: can cause stalling or no-start (≈ $100–$250).", "major"],
+    P0340: ["Camshaft position sensor (≈ $100–$250).", "major"],
+    P0420: ["Catalytic converter efficiency: could be an O2 sensor (≈ $100–$300) or the converter (≈ $800–$2,000). Can fail emissions.", "major"],
+    P0441: ["EVAP purge flow: often the purge valve (cheap).", "minor"],
+    P0442: ["Small EVAP leak: often the gas cap. Cheap.", "minor"],
+    P0455: ["Large EVAP leak: gas cap or EVAP hose. Usually cheap.", "minor"],
+    P0456: ["Very small EVAP leak: often the gas cap. Cheap.", "minor"],
+    P0500: ["Vehicle speed sensor: can affect shifting and the speedometer.", "major"],
+    P0506: ["Idle rpm lower than expected: dirty throttle body or vacuum leak.", "minor"],
+    P0507: ["Idle rpm higher than expected: vacuum leak or throttle body.", "minor"],
+    P0562: ["Low system voltage: weak battery or failing alternator.", "minor"],
+    P0700: ["Transmission control fault: a transmission code is stored. Scan the TCM for details before buying.", "major"],
+    P0715: ["Transmission input speed sensor.", "major"],
+    P0720: ["Transmission output speed sensor.", "major"],
+    P0740: ["Torque converter clutch circuit: get a transmission diagnosis.", "major"],
+    P0741: ["Torque converter clutch stuck off or slipping: get a transmission diagnosis.", "major"]
+  };
+  function obdInfo(code) {
+    code = code.toUpperCase();
+    if (OBD[code]) return { msg: OBD[code][0], sev: OBD[code][1] };
+    if (/^P073[0-6]$/.test(code)) return { msg: "Incorrect gear ratio: the transmission is slipping internally. Serious. Treat as a walk-away unless a transmission shop says otherwise.", sev: "crit" };
+    if (/^P013\d|^P014\d|^P015\d/.test(code)) return { msg: "Oxygen (O2) sensor circuit: sensor ≈ $100–$300.", sev: "minor" };
+    if (/^P03(0[5-9]|[1-9]\d)/.test(code)) return { msg: "Ignition/misfire-related code. Get it diagnosed.", sev: "major" };
+    if (/^P07/.test(code)) return { msg: "Transmission-related code. Get a transmission diagnosis before buying.", sev: "major" };
+    if (/^B/.test(code)) return { msg: "Body-system code (often airbag/SRS). Get it scanned by a shop with a full-system scanner.", sev: "major" };
+    if (/^C/.test(code)) return { msg: "Chassis code (often ABS or a wheel-speed sensor, ≈ $80–$250).", sev: "minor" };
+    if (/^U/.test(code)) return { msg: "Module communication code. Can be a wiring or battery issue. Get it checked.", sev: "minor" };
+    return { msg: "Look this code up and ask the inspecting mechanic about it.", sev: "minor" };
+  }
+
+  var SEV_LABEL = { crit: "Deal-breaker check", major: "Costly if bad", minor: "Minor" };
+  var ST_LABEL = { pass: "✓ Pass", issue: "✗ Issue", unsure: "? Unsure", na: "N/A" };
+  var ALL = [];
+  var BY_ID = {};
+  SECTIONS.forEach(function (sec) { sec.items.forEach(function (it) { it.sec = sec; ALL.push(it); BY_ID[it.id] = it; }); });
+
+  // ---------- state ----------
+  var state = load();
+  function load() {
+    try {
+      var s = JSON.parse(localStorage.getItem(STORE_KEY));
+      if (s && s.items) { s.info = s.info || {}; return s; }
+    } catch (e) {}
+    return { items: {}, info: {}, filter: "all" };
+  }
+  var saveTimer = null;
+  function save(now) {
+    clearTimeout(saveTimer);
+    var write = function () {
+      try {
+        localStorage.setItem(STORE_KEY, JSON.stringify(state));
+        flashSaved("Saved ✓");
+      } catch (e) { flashSaved("Couldn't save (private mode?)"); }
+    };
+    if (now) write(); else saveTimer = setTimeout(write, 300);
+  }
+  var savedEl = document.getElementById("saved");
+  var savedTimer = null;
+  function flashSaved(txt) {
+    savedEl.textContent = txt;
+    clearTimeout(savedTimer);
+    savedTimer = setTimeout(function () { savedEl.textContent = ""; }, 1500);
+  }
+  function rec(id) { return state.items[id] || (state.items[id] = { s: "", c: "" }); }
+  function statusOf(id) { return (state.items[id] && state.items[id].s) || ""; }
+  function commentOf(id) { return (state.items[id] && state.items[id].c) || ""; }
+
+  // ---------- helpers ----------
+  function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { "&": "&amp;", "<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#39;" }[c]; }); }
+  function money(n) { return "$" + Math.round(n).toLocaleString("en-US"); }
+  function round50(n) { return Math.round(n / 50) * 50; }
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("on");
+    setTimeout(function () { t.classList.remove("on"); }, 1800);
+  }
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function () { return true; }, function () { return legacyCopy(text); });
+    }
+    return Promise.resolve(legacyCopy(text));
+  }
+  function legacyCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text; ta.setAttribute("readonly", ""); ta.style.position = "fixed"; ta.style.top = "-1000px";
+    document.body.appendChild(ta); ta.select(); ta.setSelectionRange(0, text.length);
+    var ok = false;
+    try { ok = document.execCommand("copy"); } catch (e) {}
+    document.body.removeChild(ta);
+    return ok;
+  }
+
+  // ---------- render checklist ----------
+  var list = document.getElementById("list");
+  function renderList() {
+    var html = "";
+    SECTIONS.forEach(function (sec) {
+      html += "<details class=\"section\" id=\"sec-" + sec.id + "\" open><summary><div><div class=\"sec-title\">" + esc(sec.title) + "</div><div class=\"sec-sub\">" + esc(sec.sub) + "</div></div><div class=\"sec-count\" data-count=\"" + sec.id + "\"></div></summary>";
+      sec.items.forEach(function (it) {
+        var s = statusOf(it.id);
+        html += "<div class=\"item\" id=\"item-" + it.id + "\" data-id=\"" + it.id + "\" data-s=\"" + s + "\">" +
+          "<div class=\"item-head\"><div class=\"item-title\">" + esc(it.t) + "</div><span class=\"sev " + it.sev + "\">" + SEV_LABEL[it.sev] + "</span></div>" +
+          "<button class=\"how-btn\" data-how=\"" + it.id + "\" aria-expanded=\"false\">ⓘ How to check</button>" +
+          "<div class=\"how\">" + it.how + "</div>" +
+          "<div class=\"status\" role=\"group\" aria-label=\"Result for " + esc(it.t) + "\">" +
+          ["pass", "issue", "unsure", "na"].map(function (k) {
+            return "<button class=\"st\" data-s=\"" + k + "\" aria-pressed=\"" + (s === k) + "\">" + ST_LABEL[k] + "</button>";
+          }).join("") + "</div>" +
+          "<textarea rows=\"1\" data-c=\"" + it.id + "\" placeholder=\"Comments: what you saw, heard, were told…\" aria-label=\"Comments for " + esc(it.t) + "\">" + esc(commentOf(it.id)) + "</textarea>" +
+          "</div>";
+      });
+      html += "</details>";
+    });
+    list.innerHTML = html;
+    Array.prototype.forEach.call(list.querySelectorAll("textarea"), autosize);
+  }
+  function autosize(ta) { ta.style.height = "auto"; ta.style.height = (ta.scrollHeight + 2) + "px"; }
+
+  function updateCounts() {
+    var c = { pass: 0, issue: 0, unsure: 0, na: 0 };
+    ALL.forEach(function (it) { var s = statusOf(it.id); if (c[s] !== undefined) c[s]++; });
+    var done = c.pass + c.issue + c.unsure + c.na;
+    document.getElementById("bar").style.width = (100 * done / ALL.length) + "%";
+    document.getElementById("counts").innerHTML =
+      "<span><b>" + done + "</b>/" + ALL.length + " checked</span>" +
+      "<span style=\"color:var(--pass)\">✓ " + c.pass + "</span>" +
+      "<span style=\"color:var(--issue)\">✗ " + c.issue + "</span>" +
+      "<span style=\"color:var(--unsure)\">? " + c.unsure + "</span>" +
+      "<span>N/A " + c.na + "</span>";
+    SECTIONS.forEach(function (sec) {
+      var d = sec.items.filter(function (it) { return statusOf(it.id); }).length;
+      var el = list.querySelector("[data-count=\"" + sec.id + "\"]");
+      if (el) { el.textContent = d + "/" + sec.items.length; el.classList.toggle("done", d === sec.items.length); }
+    });
+  }
+
+  function applyFilter() {
+    var f = state.filter || "all";
+    Array.prototype.forEach.call(document.querySelectorAll(".chip"), function (ch) { ch.setAttribute("aria-pressed", String(ch.dataset.f === f)); });
+    SECTIONS.forEach(function (sec) {
+      var any = false;
+      sec.items.forEach(function (it) {
+        var s = statusOf(it.id);
+        var show = f === "all" || (f === "todo" && !s) || (f === "done" && !!s) || s === f;
+        document.getElementById("item-" + it.id).hidden = !show;
+        if (show) any = true;
+      });
+      document.getElementById("sec-" + sec.id).hidden = !any;
+    });
+    resizeAll();
+  }
+  function resizeAll() { Array.prototype.forEach.call(list.querySelectorAll(".item:not([hidden]) textarea"), autosize); }
+
+  list.addEventListener("click", function (e) {
+    var how = e.target.closest(".how-btn");
+    if (how) {
+      var item = how.closest(".item");
+      var open = item.classList.toggle("show-how");
+      how.setAttribute("aria-expanded", String(open));
+      how.textContent = open ? "ⓘ Hide" : "ⓘ How to check";
+      return;
+    }
+    var btn = e.target.closest(".st");
+    if (!btn) return;
+    var itemEl = btn.closest(".item");
+    var id = itemEl.dataset.id;
+    var r = rec(id);
+    r.s = r.s === btn.dataset.s ? "" : btn.dataset.s;
+    itemEl.dataset.s = r.s;
+    Array.prototype.forEach.call(itemEl.querySelectorAll(".st"), function (b) { b.setAttribute("aria-pressed", String(b.dataset.s === r.s)); });
+    if (r.s === "issue" || r.s === "unsure") {
+      var ta = itemEl.querySelector("textarea");
+      if (!ta.value) ta.placeholder = r.s === "issue" ? "What's wrong? (helps the review give better advice)" : "What are you unsure about?";
+    }
+    updateCounts();
+    save(true);
+  });
+  list.addEventListener("input", function (e) {
+    var ta = e.target.closest("textarea[data-c]");
+    if (!ta) return;
+    rec(ta.dataset.c).c = ta.value;
+    autosize(ta);
+    save();
+  });
+
+  document.querySelector(".filters").addEventListener("click", function (e) {
+    var ch = e.target.closest(".chip");
+    if (!ch) return;
+    state.filter = ch.dataset.f;
+    applyFilter();
+    save(true);
+  });
+
+  Array.prototype.forEach.call(document.querySelectorAll("[data-info]"), function (inp) {
+    inp.value = state.info[inp.dataset.info] || "";
+    inp.addEventListener("input", function () { state.info[inp.dataset.info] = inp.value; save(); });
+  });
+  if (!state.info.date) {
+    var d = new Date();
+    state.info.date = d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    document.getElementById("i-date").value = state.info.date;
+  }
+  if (state.introClosed) document.getElementById("intro").open = false;
+  document.getElementById("intro").addEventListener("toggle", function () { state.introClosed = !this.open; save(); });
+
+  document.getElementById("vinBtn").addEventListener("click", function () {
+    copyText(VIN).then(function (ok) { toast(ok ? "VIN copied" : VIN); });
+  });
+  document.getElementById("resetBtn").addEventListener("click", function () {
+    if (!confirm("Clear every check, comment and the car info on this phone?")) return;
+    state = { items: {}, info: {}, filter: "all" };
+    save(true);
+    Array.prototype.forEach.call(document.querySelectorAll("[data-info]"), function (inp) { inp.value = ""; });
+    renderList(); updateCounts(); applyFilter();
+    toast("Checklist cleared");
+  });
+
+  // ---------- review engine ----------
+  function normalize(t) { return t.toLowerCase().replace(/[‘’ʼ]/g, "'"); }
+  function isNegated(text, idx) {
+    var pre = text.slice(Math.max(0, idx - 30), idx);
+    var clause = pre.split(/[.,;!?\n]|\bbut\b|\bexcept\b/).pop();
+    return /\bno\b|\bnot\b|\bnone\b|\bwithout\b|\bnever\b|\bzero\b|n't\b|\bfree of\b|\bno sign/.test(clause);
+  }
+  // "smells fine", "smoke: none" → not a problem
+  function isFineAfter(text, end) {
+    return /^[\w']*[\s:,-]*((is|was|seems|looks|sounds|felt|feels|were|are|all) )?(fine|good|ok|okay|normal|clean|great|none|nothing|negative)\b/.test(text.slice(end, end + 30));
+  }
+  function scanComment(raw) {
+    var text = normalize(raw), hits = [];
+    RULES.forEach(function (r) {
+      var re = new RegExp(r.re.source, "g"), m, hit = false;
+      while ((m = re.exec(text))) {
+        if (m[0].length === 0) { re.lastIndex++; continue; }
+        if (r.skipPre && r.skipPre.test(text.slice(Math.max(0, m.index - 6), m.index))) continue;
+        if (r.neg === false || !(isNegated(text, m.index) || isFineAfter(text, m.index + m[0].length))) { hit = true; break; }
+      }
+      if (hit) hits.push({ k: r.k, sev: r.sev, msg: r.msg });
+    });
+    hits = hits.filter(function (h) {
+      var r = RULES.filter(function (x) { return x.k === h.k; })[0];
+      return !(r && r.unless && hits.some(function (o) { return r.unless.indexOf(o.k) >= 0; }));
+    });
+    var codes = {}, cm, cre = /\b([pbcu][0-9][0-9a-f]{3})\b/g;
+    while ((cm = cre.exec(text))) codes[cm[1].toUpperCase()] = true;
+    Object.keys(codes).forEach(function (code) { var info = obdInfo(code); hits.push({ k: "obd-" + code, sev: info.sev, msg: "<b>" + code + "</b>: " + info.msg, code: code }); });
+    var pm = POSITIVE.exec(text);
+    var positive = !!(pm && !isNegated(text, pm.index) && !/need/.test(text.slice(Math.max(0, pm.index - 15), pm.index)));
+    return { hits: hits, positive: positive };
+  }
+
+  function analyze() {
+    var res = { issues: [], unsure: [], pass: [], na: [], todo: [], flags: [], contradictions: [], positives: [], codes: [], lo: 0, hi: 0, critIssues: [], majorIssues: [], minorIssues: [] };
+    ALL.forEach(function (it) {
+      var s = statusOf(it.id), c = commentOf(it.id).trim();
+      var scan = c ? scanComment(c) : { hits: [], positive: false };
+      var entry = { it: it, s: s, c: c, hits: scan.hits };
+      scan.hits.forEach(function (h) { if (h.code) res.codes.push({ it: it, code: h.code, msg: h.msg, sev: h.sev }); });
+      if (s === "issue") {
+        res.issues.push(entry);
+        var sev = it.sev;
+        // a comment can escalate a check's severity (e.g. "rust holes" → deal-breaker)
+        scan.hits.forEach(function (h) { if (h.sev === "crit") sev = "crit"; else if (h.sev === "major" && sev === "minor") sev = "major"; });
+        entry.sev = sev;
+        if (sev === "crit") res.critIssues.push(entry); else if (sev === "major") res.majorIssues.push(entry); else res.minorIssues.push(entry);
+        if (it.cost) { res.lo += it.cost[0]; res.hi += it.cost[1]; }
+      } else if (s === "unsure") {
+        res.unsure.push(entry);
+      } else if (s === "pass") {
+        res.pass.push(entry);
+        var bad = scan.hits.filter(function (h) { return !h.code || h.sev !== "minor"; });
+        if (bad.length) res.contradictions.push({ it: it, c: c, hits: bad });
+        if (scan.positive) res.positives.push(entry);
+      } else if (s === "na") {
+        res.na.push(entry);
+      } else {
+        res.todo.push(entry);
+      }
+      if (s !== "pass" && s !== "issue" && scan.hits.length) {
+        res.flags.push(entry);
+        if (s === "unsure" && scan.hits.some(function (h) { return h.sev === "crit"; })) res.critFlagged = (res.critFlagged || []).concat([entry]);
+      }
+    });
+    res.done = ALL.length - res.todo.length;
+    res.critTodo = res.todo.filter(function (e) { return e.it.sev === "crit"; });
+    res.critUnsure = res.unsure.filter(function (e) { return e.it.sev === "crit"; });
+    res.majorTodo = res.todo.filter(function (e) { return e.it.sev === "major"; });
+    res.critFlagged = res.critFlagged || [];
+    res.ppiDone = statusOf("deal-ppi") === "pass";
+    return res;
+  }
+
+  function jump(id) { return "<a href=\"#item-" + id + "\" data-jump=\"" + id + "\">" + esc(BY_ID[id].t) + "</a>"; }
+  function jumpList(entries, max) {
+    var shown = entries.slice(0, max).map(function (e) { return jump(e.it.id); });
+    var more = entries.length - shown.length;
+    return shown.join(", ") + (more > 0 ? " and " + more + " more" : "");
+  }
+  function noteHtml(c) { return c ? "<span class=\"note\">Your note: “" + esc(c) + "”</span>" : ""; }
+  function costHtml(it) { return it.cost && it.cost[1] > 0 ? " <span class=\"cost\">≈ " + money(it.cost[0]) + "–" + money(it.cost[1]) + "</span>" : ""; }
+  function hitsHtml(hits) { return hits.map(function (h) { return "<span class=\"adv\">→ " + (h.code ? h.msg : esc(h.msg)) + "</span>"; }).join(""); }
+  function priceNum() { var p = parseFloat(String(state.info.price || "").replace(/[^0-9.]/g, "")); return isFinite(p) && p > 0 ? p : 0; }
+
+  function buildReview() {
+    var r = analyze();
+    var price = priceNum();
+    var v;
+    if (r.critIssues.length) {
+      v = { cls: "red", title: "Serious red flag. Don't buy yet.", text: "Deal-breaker-level problem found in: " + jumpList(r.critIssues, 6) + ". Unless a trusted mechanic tells you it's minor, walk away. There are plenty of 2012–2014 Mazda3s out there." };
+    } else if (r.critFlagged.length) {
+      v = { cls: "red", title: "Possible deal-breaker. Settle this first.", text: "Your note on " + jumpList(r.critFlagged, 4) + " sounds like a deal-breaker sign. Verify it before you spend more time or money on this car. If it's confirmed, walk away." };
+    } else if (r.majorIssues.length) {
+      v = { cls: "amber", title: "Fixable problems. Negotiate.", text: "Nothing you've marked is a deal-breaker, but there are real costs" + (r.hi ? " (roughly " + money(r.lo) + "–" + money(r.hi) + ")" : "") + ". Get them confirmed by a mechanic and use them to negotiate the price down." };
+    } else if (r.done === 0) {
+      v = { cls: "blue", title: "Nothing checked yet", text: "Start with section 1 (paperwork). It takes 5 minutes and catches the biggest deal-breakers before you spend time on the car." };
+    } else if (r.critTodo.length || r.critUnsure.length) {
+      var unsureFlags = r.unsure.some(function (e) { return e.hits.length; });
+      v = { cls: "blue", title: r.minorIssues.length ? "Only minor issues so far. Keep going." : unsureFlags ? "No confirmed problems yet. Settle your unsure items." : "So far so good. Keep going.", text: "You still have deal-breaker checks to finish: " + jumpList(r.critTodo.concat(r.critUnsure), 6) + "." };
+    } else if (r.done >= ALL.length * 0.85) {
+      v = { cls: "green", title: "Looks like a solid candidate", text: "All deal-breaker checks passed" + (r.minorIssues.length ? " and only minor issues found" : " with no issues") + ". " + (r.ppiDone ? "With a clean inspection, you can negotiate and buy with confidence." : "Get an independent pre-purchase inspection to confirm, then negotiate.") };
+    } else {
+      v = { cls: "blue", title: "Good so far. Finish the remaining checks.", text: "All deal-breaker checks are done and nothing serious has turned up. Work through the rest, especially the test drive." };
+    }
+
+    var steps = [];
+    if (r.critIssues.length) steps.push("<b>Stop. Don't pay or sign anything.</b> If you still love the car, have an independent mechanic look at " + jumpList(r.critIssues, 4) + " and give a written opinion first.");
+    else if (r.critFlagged.length) steps.push("<b>Don't pay or sign anything until you've ruled out</b> " + jumpList(r.critFlagged, 4) + ".");
+    r.critUnsure.forEach(function (e) { steps.push("<b>Verify " + jump(e.it.id) + ":</b> " + esc(e.it.unsure)); });
+    if (r.critTodo.length) steps.push("<b>Check the deal-breakers next:</b> " + jumpList(r.critTodo, 6) + ".");
+    var costly = r.issues.filter(function (e) { return e.it.cost && e.it.cost[1] > 0; });
+    if (costly.length) steps.push("<b>Get written repair estimates</b> for " + jumpList(costly, 6) + ". Expected total ≈ " + money(r.lo) + "–" + money(r.hi) + ".");
+    var otherUnsure = r.unsure.filter(function (e) { return e.it.sev !== "crit"; });
+    if (otherUnsure.length) steps.push("<b>Clear up what you were unsure about:</b> " + jumpList(otherUnsure, 5) + " (tips below).");
+    if (r.majorTodo.length) steps.push("<b>Then the costly-if-bad checks:</b> " + jumpList(r.majorTodo, 5) + ".");
+    if (r.codes.length) steps.push("<b>Ask the mechanic about the codes you found:</b> " + r.codes.map(function (x) { return x.code; }).join(", ") + ".");
+    if (!r.ppiDone && v.cls !== "red") steps.push("<b>Book an independent pre-purchase inspection</b> (≈ $100–$200). At 165k miles it's the best money you'll spend. A seller who won't allow one is a red flag.");
+    if (v.cls !== "red" && (r.lo || r.hi)) {
+      if (price) {
+        var open = Math.max(0, round50(price - (r.lo + r.hi) / 2)), ceiling = Math.max(0, round50(price - r.lo));
+        steps.push("<b>Negotiate:</b> asking is " + money(price) + ". With ≈ " + money(r.lo) + "–" + money(r.hi) + " of repairs, open at about <b>" + money(open) + "</b> (asking minus the mid-range estimate) and try not to go above <b>" + money(ceiling) + "</b> (asking minus the low estimate). Show the seller your list and the mechanic's quotes, and compare with the KBB/Edmunds private-party value.");
+      } else {
+        steps.push("<b>Negotiate:</b> enter the asking price at the top of the checklist and I'll suggest an offer based on the ≈ " + money(r.lo) + "–" + money(r.hi) + " in repairs you found.");
+      }
+    }
+    if (v.cls === "green") steps.push("<b>Close the deal safely:</b> title signed correctly, bill of sale, odometer disclosure, all keys, and insurance before you drive away.");
+    if (r.todo.length && !r.critTodo.length && !r.majorTodo.length) steps.push("<b>Finish the last minor checks:</b> " + jumpList(r.todo, 6) + ".");
+    if (!steps.length) steps.push("Everything is checked. Read the notes below, then decide.");
+
+    var h = "";
+    h += "<div class=\"verdict " + v.cls + "\"><h3>" + v.title + "</h3><p>" + v.text + "</p></div>";
+    h += "<div class=\"stats\"><div><b>" + r.done + "/" + ALL.length + "</b>checked</div><div><b style=\"color:var(--pass)\">" + r.pass.length + "</b>pass</div><div><b style=\"color:var(--issue)\">" + r.issues.length + "</b>issues</div><div><b style=\"color:var(--unsure)\">" + r.unsure.length + "</b>unsure</div></div>";
+    h += "<div class=\"actions\"><button id=\"copyReport\">Copy report for ChatGPT / Claude</button><button class=\"secondary\" id=\"shareReport\">Share…</button></div>";
+    h += "<section class=\"card rv\"><h3>What to do next</h3><ol>" + steps.map(function (s) { return "<li>" + s + "</li>"; }).join("") + "</ol></section>";
+
+    if (r.issues.length) {
+      var order = { crit: 0, major: 1, minor: 2 };
+      var sorted = r.issues.slice().sort(function (a, b) { return order[a.sev] - order[b.sev]; });
+      h += "<section class=\"card rv\"><h3>Issues you found (" + r.issues.length + ")</h3><ul>" + sorted.map(function (e) {
+        return "<li><span class=\"sev " + e.sev + "\">" + SEV_LABEL[e.sev] + "</span> " + jump(e.it.id) + costHtml(e.it) + noteHtml(e.c) + "<span class=\"adv\">" + esc(e.it.issue) + "</span>" + hitsHtml(e.hits) + "</li>";
+      }).join("") + "</ul>" + (r.hi ? "<p><b>Estimated repairs: " + money(r.lo) + "–" + money(r.hi) + "</b> (rough independent-shop prices; get real quotes)</p>" : "") + "</section>";
+    }
+    if (r.contradictions.length) {
+      h += "<section class=\"card rv\"><h3>Double-check these (marked Pass, but your note sounds concerning)</h3><ul>" + r.contradictions.map(function (x) {
+        return "<li>" + jump(x.it.id) + noteHtml(x.c) + hitsHtml(x.hits) + "</li>";
+      }).join("") + "</ul></section>";
+    }
+    var flagged = r.flags.filter(function (e) { return e.s !== "unsure"; });
+    if (flagged.length) {
+      h += "<section class=\"card rv\"><h3>Your notes on unmarked or N/A checks</h3><ul>" + flagged.map(function (e) {
+        return "<li>" + jump(e.it.id) + noteHtml(e.c) + hitsHtml(e.hits) + "</li>";
+      }).join("") + "</ul></section>";
+    }
+    if (r.unsure.length) {
+      h += "<section class=\"card rv\"><h3>How to settle what you're unsure about</h3><ul>" + r.unsure.map(function (e) {
+        return "<li><span class=\"sev " + e.it.sev + "\">" + SEV_LABEL[e.it.sev] + "</span> " + jump(e.it.id) + noteHtml(e.c) + "<span class=\"adv\">" + esc(e.it.unsure) + "</span>" + hitsHtml(e.hits) + "</li>";
+      }).join("") + "</ul></section>";
+    }
+    if (r.todo.length) {
+      h += "<section class=\"card rv\"><h3>Still to check (" + r.todo.length + ")</h3><ul>" + SECTIONS.map(function (sec) {
+        var left = r.todo.filter(function (e) { return e.it.sec === sec; });
+        if (!left.length) return "";
+        left.sort(function (a, b) { return ({ crit: 0, major: 1, minor: 2 })[a.it.sev] - ({ crit: 0, major: 1, minor: 2 })[b.it.sev]; });
+        return "<li><b>" + esc(sec.title) + ":</b> " + left.map(function (e) { return jump(e.it.id) + (e.it.sev === "crit" ? " ⚠︎" : ""); }).join(", ") + "</li>";
+      }).join("") + "</ul><p class=\"sec-sub\">⚠︎ = deal-breaker check</p></section>";
+    }
+    if (r.positives.length || r.pass.length) {
+      var critPassed = r.pass.filter(function (e) { return e.it.sev === "crit"; }).length;
+      var critTotal = ALL.filter(function (it) { return it.sev === "crit"; }).length;
+      h += "<section class=\"card rv\"><h3>Good signs</h3><ul><li>" + critPassed + " of " + critTotal + " deal-breaker checks passed.</li>" + r.positives.map(function (e) {
+        return "<li>" + jump(e.it.id) + noteHtml(e.c) + "<span class=\"adv\">→ Ask for receipts or photos of this. It adds value and confidence.</span></li>";
+      }).join("") + "</ul></section>";
+    }
+    h += "<section class=\"card rv\"><h3>If you buy it: first-week to-do list</h3><ul>" +
+      "<li>Fix any open recalls free at a Mazda dealer.</li>" +
+      "<li>Oil & filter. SKYACTIV engines usually spec 0W-20 (older 2.0 MZR: 5W-20). Check the oil cap or manual.</li>" +
+      "<li>Spark plugs if there's no record of them in the last ~75k miles.</li>" +
+      "<li>Engine air filter and cabin air filter.</li>" +
+      "<li>Brake fluid and coolant if they're dark or there's no record.</li>" +
+      "<li>Transmission fluid if there's no record. Ask a trusted shop: a gentle drain-and-fill is usually preferred over a power flush on a high-mileage transmission.</li>" +
+      "<li>Insurance and registration before you drive it home.</li>" +
+      "</ul></section>";
+    h += "<p class=\"sec-sub\">This review uses the checks and words in your comments. It's a guide, not a mechanic's diagnosis. For a second opinion, tap <b>Copy report</b> and paste it into ChatGPT or Claude.</p>";
+    return { html: h, r: r, v: v, steps: steps };
+  }
+
+  function plain(html) { var d = document.createElement("div"); d.innerHTML = html; return d.textContent.replace(/\s+/g, " ").trim(); }
+  function buildReport(rv) {
+    var r = rv.r, info = state.info, lines = [];
+    lines.push("USED-CAR INSPECTION: 2012 Mazda3, ~165k miles, VIN " + VIN);
+    var meta = [];
+    if (info.price) meta.push("Asking: $" + info.price);
+    if (info.odo) meta.push("Odometer seen: " + info.odo);
+    if (info.seller) meta.push("Seller: " + info.seller);
+    if (info.date) meta.push("Date: " + info.date);
+    if (meta.length) lines.push(meta.join(" | "));
+    lines.push("Progress: " + r.done + "/" + ALL.length + " checked (" + r.pass.length + " pass, " + r.issues.length + " issues, " + r.unsure.length + " unsure, " + r.na.length + " N/A)");
+    lines.push("");
+    function block(title, entries) {
+      if (!entries.length) return;
+      lines.push(title + ":");
+      entries.forEach(function (e) { lines.push("- " + e.it.t + (e.c ? ": " + e.c : "")); });
+      lines.push("");
+    }
+    block("ISSUES", r.issues);
+    block("UNSURE", r.unsure);
+    block("PASSED", r.pass);
+    block("N/A", r.na);
+    var todoNoted = r.todo.filter(function (e) { return e.c; });
+    block("NOTES ON UNMARKED CHECKS", todoNoted);
+    if (r.todo.length) { lines.push("NOT CHECKED YET: " + r.todo.map(function (e) { return e.it.t; }).join("; ")); lines.push(""); }
+    lines.push("Checklist's auto-review: " + plain(rv.v.title) + " " + plain(rv.v.text));
+    if (r.hi) lines.push("Estimated repairs from issues: " + money(r.lo) + "–" + money(r.hi));
+    lines.push("");
+    lines.push("Please review my inspection notes for this 2012 Mazda3. Tell me what's serious, what I should verify next, whether I should buy it, and how much to negotiate.");
+    return lines.join("\n");
+  }
+
+  var sheet = document.getElementById("review");
+  var body = document.getElementById("reviewBody");
+  var lastFocus = null;
+  function openReview() {
+    var rv = buildReview();
+    body.innerHTML = rv.html;
+    var report = buildReport(rv);
+    document.getElementById("copyReport").addEventListener("click", function () {
+      copyText(report).then(function (ok) {
+        if (ok) { toast("Report copied. Paste it into ChatGPT or Claude"); return; }
+        showCopyBox(report);
+      });
+    });
+    var shareBtn = document.getElementById("shareReport");
+    if (navigator.share) {
+      shareBtn.addEventListener("click", function () { navigator.share({ title: "2012 Mazda3 inspection", text: report }).catch(function () {}); });
+    } else {
+      shareBtn.textContent = "Show report text";
+      shareBtn.addEventListener("click", function () { showCopyBox(report); });
+    }
+    lastFocus = document.activeElement;
+    sheet.hidden = false;
+    document.body.style.overflow = "hidden";
+    sheet.scrollTop = 0;
+    document.getElementById("closeReview").focus();
+  }
+  function showCopyBox(report) {
+    if (document.getElementById("copybox")) return;
+    var sec = document.createElement("section");
+    sec.className = "card rv";
+    sec.innerHTML = "<h3>Report text (select all and copy)</h3><textarea id=\"copybox\" class=\"copybox\" readonly></textarea>";
+    body.insertBefore(sec, body.children[3] || null);
+    var ta = document.getElementById("copybox");
+    ta.value = report; ta.focus(); ta.select();
+  }
+  function closeReview() {
+    sheet.hidden = true;
+    document.body.style.overflow = "";
+    if (lastFocus && lastFocus.focus) lastFocus.focus();
+  }
+  document.getElementById("reviewBtn").addEventListener("click", openReview);
+  document.getElementById("closeReview").addEventListener("click", closeReview);
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && !sheet.hidden) closeReview(); });
+  body.addEventListener("click", function (e) {
+    var a = e.target.closest("[data-jump]");
+    if (!a) return;
+    e.preventDefault();
+    closeReview();
+    if (state.filter !== "all") { state.filter = "all"; applyFilter(); save(true); }
+    var el = document.getElementById("item-" + a.dataset.jump);
+    el.closest("details").open = true;
+    setTimeout(function () {
+      el.scrollIntoView({ behavior: "smooth", block: "start" });
+      el.classList.add("flash");
+      setTimeout(function () { el.classList.remove("flash"); }, 1600);
+    }, 50);
+  });
+
+  // ---------- boot ----------
+  renderList();
+  updateCounts();
+  applyFilter();
+  window.addEventListener("resize", resizeAll);
+  list.addEventListener("toggle", function (e) { if (e.target.open) resizeAll(); }, true);
+
+  if ("serviceWorker" in navigator && location.protocol === "https:") {
+    navigator.serviceWorker.register("sw.js").catch(function () {});
+  }
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "2012 Mazda3 Inspection Checklist",
+  "short_name": "Mazda3 Check",
+  "description": "Used-car inspection checklist for a 2012 Mazda3 (VIN JM1BL1V86C1643603) with pass/issue tracking, comments and a review.",
+  "start_url": "index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f4f4f6",
+  "theme_color": "#8f1d2c",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
